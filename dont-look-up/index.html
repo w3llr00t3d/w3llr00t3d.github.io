@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en" ml-update="aware"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Don't Look Up — How to Intercept Unencrypted Satellite Data</title>
+  <style>
+    :root {
+      --bg: #080c17;
+      --surface: #0e1525;
+      --card: #121d30;
+      --card2: #0f1a2b;
+      --accent: #00d4ff;
+      --accent2: #7c3aed;
+      --accent3: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #1e3a5f;
+      --border2: #162035;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.7;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background:
+        radial-gradient(ellipse at 65% -10%, #0a2444 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, #1a0a3a 0%, transparent 50%),
+        var(--bg);
+      padding: 90px 24px 70px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300d4ff' fill-opacity='0.025'%3E%3Ccircle cx='40' cy='40' r='1'/%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.25);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5.5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(140deg, #ffffff 20%, #7dd3fc 60%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: #64748b;
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+
+    .hero-desc {
+      max-width: 660px;
+      margin: 0 auto 36px;
+      color: #94a3b8;
+      font-size: 1.05rem;
+    }
+
+    .stat-bar {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 700px;
+      margin: 0 auto 36px;
+      background: var(--surface);
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 130px;
+      padding: 16px 20px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-num {
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .hero-authors {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    section:last-child { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    .step-badge {
+      flex-shrink: 0;
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 0 24px rgba(0,212,255,0.2);
+      margin-top: 3px;
+    }
+
+    .section-title h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #f1f5f9;
+      line-height: 1.2;
+    }
+
+    .section-title .sub {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    p { color: #94a3b8; margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: #e2e8f0; }
+
+    /* ── HARDWARE CARDS ── */
+    .hw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .hw-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      position: relative;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .hw-card:hover { border-color: rgba(0,212,255,0.35); transform: translateY(-2px); }
+
+    .hw-card .hw-icon { font-size: 2.2rem; margin-bottom: 12px; }
+
+    .hw-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+    }
+
+    .hw-card .model {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-family: monospace;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .hw-card p { font-size: 0.88rem; margin-bottom: 0; }
+
+    .hw-price {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent3);
+    }
+
+    .total-cost {
+      margin-top: 20px;
+      background: rgba(16,185,129,0.07);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 12px;
+      padding: 16px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-cost span { color: #6ee7b7; font-size: 0.9rem; }
+    .total-cost strong { font-size: 1.4rem; color: var(--accent3); font-weight: 900; }
+
+    /* ── STEPS ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+
+    .step:hover { border-color: rgba(0,212,255,0.2); }
+
+    .step-dot {
+      flex-shrink: 0;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(0,212,255,0.08);
+      border: 2px solid rgba(0,212,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-top: 1px;
+    }
+
+    .step-body h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .step-body p { font-size: 0.9rem; margin-bottom: 0; }
+
+    code {
+      background: rgba(0,212,255,0.08);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 5px;
+      padding: 1px 6px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.85em;
+      color: var(--accent);
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: #040a14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #7dd3fc;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .code-block .c  { color: #334155; }
+    .code-block .g  { color: var(--accent3); }
+    .code-block .y  { color: #fbbf24; }
+    .code-block .w  { color: #e2e8f0; }
+    .code-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── ALERTS ── */
+    .alert {
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin: 18px 0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .alert.info  { background: rgba(0,212,255,0.07); border: 1px solid rgba(0,212,255,0.2); color: #bae6fd; }
+    .alert.warn  { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); color: #fde68a; }
+    .alert.danger{ background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+    .alert.ok    { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+
+    .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .alert p { color: inherit; margin: 0; font-size: 0.9rem; }
+
+    /* ── PROTOCOL STACK TABLE ── */
+    .proto-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 0.85rem;
+    }
+
+    .proto-table th {
+      background: var(--surface);
+      color: var(--accent);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .proto-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border2);
+      color: #94a3b8;
+      vertical-align: top;
+    }
+
+    .proto-table tr:hover td { background: rgba(0,212,255,0.03); }
+
+    .proto-table .num {
+      font-weight: 700;
+      color: var(--accent3);
+      font-size: 1rem;
+    }
+
+    .proto-table .tag-new {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent2);
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 6px;
+    }
+
+    /* ── VENDOR TABLE ── */
+    .vendor-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 20px 0;
+    }
+
+    .vendor-table th {
+      background: var(--surface);
+      color: var(--accent);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .vendor-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border2);
+      color: #94a3b8;
+    }
+
+    .vendor-table tr:hover td { background: rgba(0,212,255,0.03); }
+
+    .crypto-yes { color: var(--accent3); font-weight: 700; }
+    .crypto-no  { color: var(--muted); }
+
+    /* ── FINDING CARDS ── */
+    .findings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .finding {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .finding .status-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .s-fixed    { color: var(--accent3); background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); }
+    .s-partial  { color: var(--warn); background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); }
+    .s-exposed  { color: var(--danger); background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); }
+
+    .finding h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+      padding-right: 80px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 100px;
+      margin-bottom: 10px;
+    }
+
+    .t-telecom  { background: rgba(0,212,255,0.1); color: #7dd3fc; border: 1px solid rgba(0,212,255,0.2); }
+    .t-military { background: rgba(245,158,11,0.1); color: #fde68a; border: 1px solid rgba(245,158,11,0.2); }
+    .t-utility  { background: rgba(16,185,129,0.1); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+    .t-finance  { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+    .t-aviation { background: rgba(124,58,237,0.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
+    .t-retail   { background: rgba(251,191,36,0.1); color: #fde68a; border: 1px solid rgba(251,191,36,0.2); }
+
+    .finding p { font-size: 0.87rem; margin-bottom: 6px; }
+
+    .finding ul {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+    }
+
+    .finding ul li {
+      font-size: 0.83rem;
+      color: #64748b;
+      padding: 3px 0 3px 14px;
+      position: relative;
+    }
+
+    .finding ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── ENCRYPTION LAYERS ── */
+    .layers {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .layer {
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .layer:last-child { border-bottom: none; }
+    .layer:nth-child(1) { background: rgba(16,185,129,0.06); }
+    .layer:nth-child(2) { background: rgba(245,158,11,0.05); }
+    .layer:nth-child(3) { background: rgba(239,68,68,0.05); }
+
+    .layer-name { font-weight: 600; color: #e2e8f0; font-size: 0.9rem; }
+    .layer-stat { font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; }
+    .ls-ok  { background: rgba(16,185,129,0.2); color: var(--accent3); }
+    .ls-mid { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .ls-bad { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+    /* ── DISCLOSURE TIMELINE ── */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px; top: 8px; bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2));
+      border-radius: 2px;
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .tl-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 7px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 8px rgba(0,212,255,0.5);
+    }
+
+    .tl-date {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-bottom: 2px;
+    }
+
+    .tl-item h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 2px;
+    }
+
+    .tl-item p { font-size: 0.85rem; margin: 0; }
+
+    /* ── BLOCKQUOTE ── */
+    blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 24px 0;
+      padding: 12px 22px;
+      background: rgba(0,212,255,0.04);
+      border-radius: 0 12px 12px 0;
+      font-style: italic;
+      color: #94a3b8;
+    }
+
+    blockquote cite {
+      display: block;
+      margin-top: 8px;
+      font-style: normal;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── SIGNAL ANIMATION ── */
+    .signal-vis {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 36px;
+      margin: 14px 0;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--accent), rgba(0,212,255,0.15));
+      border-radius: 3px 3px 0 0;
+      animation: pbar 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pbar { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    .bar:nth-child(1){height:25%;animation-delay:0s}
+    .bar:nth-child(2){height:55%;animation-delay:.1s}
+    .bar:nth-child(3){height:100%;animation-delay:.05s}
+    .bar:nth-child(4){height:80%;animation-delay:.15s}
+    .bar:nth-child(5){height:65%;animation-delay:.2s}
+    .bar:nth-child(6){height:90%;animation-delay:.08s}
+    .bar:nth-child(7){height:45%;animation-delay:.12s}
+    .bar:nth-child(8){height:35%;animation-delay:.18s}
+
+    /* ── COMPARISON BOX ── */
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .cmp-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .cmp-box h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+
+    .cmp-num {
+      font-size: 2.5rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .cmp-desc { font-size: 0.82rem; margin-top: 4px; }
+    .cmp-box.theirs .cmp-num { color: #475569; }
+    .cmp-box.ours   .cmp-num { color: var(--accent); }
+
+    /* ── RSA SECTION ── */
+    .rsa-box {
+      background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(0,212,255,0.04));
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 24px;
+    }
+
+    .rsa-box h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #c4b5fd;
+      margin-bottom: 12px;
+    }
+
+    .rsa-box p { color: #94a3b8; font-size: 0.9rem; }
+
+    .rsa-known {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-family: monospace;
+      font-size: 0.83rem;
+    }
+
+    .rsa-known .rk { color: var(--accent3); }
+    .rsa-known .ru { color: #475569; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 44px 24px;
+      text-align: center;
+    }
+
+    footer p { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0 8px;
+    }
+
+    .footer-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    .footer-links a:hover { opacity: 0.7; }
+
+    .nsf-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 60px 20px 50px; }
+      .stat-item { min-width: 110px; }
+      .comparison { grid-template-columns: 1fr; }
+      .cmp-num { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-eyebrow">🛰 Security Research • CCS 2025 • UC San Diego &amp; UMD</div>
+  <h1>Don't Look Up</h1>
+  <p class="hero-subtitle">"There Are Sensitive Internal Links in the Clear on GEO Satellites"</p>
+  <p class="hero-desc">Researchers bought $650 of consumer satellite 
+equipment, mounted it on a rooftop, and found that 50% of geostationary 
+satellite links broadcast private network traffic in the clear — phone 
+calls, SMS messages, SCADA commands, credit card numbers, and military 
+asset locations.</p>
+
+  <div class="stat-bar">
+    <div class="stat-item">
+      <span class="stat-num">39</span>
+      <span class="stat-label">Satellites scanned</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">411</span>
+      <span class="stat-label">Transponders</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">50%</span>
+      <span class="stat-label">Cleartext links</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">3.7 TB</span>
+      <span class="stat-label">Raw data collected</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">$650</span>
+      <span class="stat-label">Total hardware cost</span>
+    </div>
+  </div>
+
+  <p class="hero-authors">Wenyi Morty Zhang • Annie Dai • Keegan Ryan • Dave Levin • Nadia Heninger • Aaron Schulman</p>
+</header>
+
+<div class="container">
+
+  <!-- ── BACKGROUND ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">⚡</div>
+      <div class="section-title">
+        <h2>How GEO Satellites Work</h2>
+        <span class="sub">What makes them uniquely vulnerable to passive interception</span>
+      </div>
+    </div>
+
+    <p>Geostationary satellites orbit the equator at a fixed altitude, each identified by its longitudinal <em>orbital slot</em>. There are <strong>590 active GEO satellites</strong> carrying thousands of independent network links. Each satellite hosts dozens of <em>transponders</em> — amplifying relays operating at different frequencies and polarizations.</p>
+
+    <p>The core architecture is called a <strong>"bent pipe"</strong>: satellites do zero encryption or decryption. They simply receive signals from the ground and rebroadcast them. A hub sends a <em>forward link</em>
+ broadcast to all remote terminals in a footprint that can span a 
+continent — roughly 10,000 km in diameter. That same broadcast falls on 
+anyone with a dish in that footprint.</p>
+
+    <p>Encryption <em>can</em> be deployed at three layers — but often isn't:</p>
+
+    <div class="layers">
+      <div class="layer">
+        <span class="layer-name">🔒 Application layer — TLS/HTTPS</span>
+        <span class="layer-stat ls-ok">~100% for consumer web browsing</span>
+      </div>
+      <div class="layer">
+        <span class="layer-name">⚠️ Network layer — IPSec</span>
+        <span class="layer-stat ls-mid">Only 6% of IP-carrying transponders</span>
+      </div>
+      <div class="layer">
+        <span class="layer-name">❌ Link layer — satellite terminal encryption</span>
+        <span class="layer-stat ls-bad">Only 10% of non-TV transponders; 20% of GSE links</span>
+      </div>
+    </div>
+
+    <div class="alert warn">
+      <span class="alert-icon">⚠</span>
+      <p>A 2022 NSA advisory explicitly warned: <em>"Most of these links
+ are unencrypted, relying on frequency separation or predictable 
+frequency hopping rather than encryption to separate communications."</em> This research confirms that at scale.</p>
+    </div>
+
+    <p>Unlike low-Earth orbit (Starlink, etc.), GEO satellites have <em>no gaps in coverage</em>
+ — making them the backbone of critical legacy infrastructure for 
+utilities, telecoms, military, and aviation. Many of these systems are 
+decades old. Satellites are designed to operate for up to 15 years.</p>
+  </section>
+
+  <!-- ── STEP 1: HARDWARE ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">1</div>
+      <div class="section-title">
+        <h2>Buy the Hardware</h2>
+        <span class="sub">Everything off the shelf. Total cost: ~$650.</span>
+      </div>
+    </div>
+
+    <p>No 10-meter dish. No phased array. No $15,000 dual-axis steerable
+ setup. This was consumer equipment ordered online, funded by a 
+professor's discretionary budget "for funsies projects."</p>
+
+    <div class="hw-grid">
+      <div class="hw-card">
+        <div class="hw-icon">📡</div>
+        <h3>110cm KU-Band Satellite Dish</h3>
+        <span class="model">Standard offset parabolic dish</span>
+        <p>Large enough to receive GEO signal even at the edge of a 
+transponder footprint. Install it right-side up — the team initially 
+didn't.</p>
+        <div class="hw-price">$180</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">📢</div>
+        <h3>Universal Ku-Band LNB</h3>
+        <span class="model">10.7–12.75 GHz, 0.1 dB noise figure</span>
+        <p>Low-noise block downconverter with H/V linear polarization support. Covers the full Ku-band downlink range.</p>
+        <div class="hw-price">$15</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">🔁</div>
+        <h3>DiSEqC 1.2 Dish Motor</h3>
+        <span class="model">STAB HH90, ±60° single-axis rotor</span>
+        <p>Consumer-grade motor for hobbyists who want access to 
+multiple TV satellites. Controlled over coaxial cable via DiSEqC 1.2 
+commands.</p>
+        <div class="hw-price">$195</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">💻</div>
+        <h3>TBS-5927 DVB-S/S2 USB Tuner Card</h3>
+        <span class="model">STMicroelectronics STV0910 demodulator</span>
+        <p>High-performance tuner supporting blind scan (100–70,000 KS/s), signal locking, and raw capture over 950–2150 MHz IF band. <em>Went out of stock and was discontinued after the paper published.</em></p>
+        <div class="hw-price">$230</div>
+      </div>
+      <div class="hw-card">
+        <div class="hw-icon">🔧</div>
+        <h3>Miscellaneous</h3>
+        <span class="model">Cables, connectors, crimping tools</span>
+        <p>Coaxial cables, power inserters, F-type connectors. Nothing exotic.</p>
+        <div class="hw-price">$30</div>
+      </div>
+    </div>
+
+    <div class="total-cost">
+      <span>Total hardware investment — for scanning 14.3% of all global Ku-band satellites</span>
+      <strong>~$650</strong>
+    </div>
+
+    <div class="alert info">
+      <span class="alert-icon">ℹ</span>
+      <p>From a single vantage point in La Jolla, CA, this setup scanned
+ satellites between 61.0° W and 129.0° W — 39 satellites at 25 distinct 
+longitudes. With precise alignment, they were able to receive IP traffic
+ from <strong>14.3% of all global Ku-band satellites</strong>.</p>
+    </div>
+  </section>
+
+  <!-- ── STEP 2: ALIGNMENT ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">2</div>
+      <div class="section-title">
+        <h2>Align the Dish</h2>
+        <span class="sub">A 1° elevation error costs 5+ dB SNR. Compass-based azimuth alignment is "effectively impossible."</span>
+      </div>
+    </div>
+
+    <p>This was the hardest part. A single-axis rotor sweeps along an 
+elliptical arc — if the azimuth origin is wrong, satellites at the edges
+ of the arc fail to lock even when central ones receive fine. The team 
+discovered the fix hidden in the satellite feeds themselves.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-body">
+          <h4>Elevation (vertical) alignment</h4>
+          <p>Any elevation error shifts the entire arc uniformly. A misalignment of just over <strong>1° reduced SNR by more than 5 dB</strong>
+ despite using a large 110 cm dish. Use an AR satellite-finder app to 
+set your rough elevation, then fine-tune by watching SNR on known TV 
+satellites.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">2</div>
+        <div class="step-body">
+          <h4>Azimuth (horizontal) alignment — use the satellites themselves</h4>
+          <p>Magnetic compasses and mobile apps are unreliable in urban environments. Instead, use <strong>ground-truth references hidden in the satellite feeds</strong>:
+ some transponders broadcast their own satellite name, orbital slot 
+(e.g., 99° W), and beam ID in DVB-SI Network Information Tables (NIT) 
+and Service Description Tables (SDT). Cross-reference with public FTA 
+databases like <strong>LyngSat</strong>.</p>
+          <p>The team identified 12 anchor transponders across 8 longitudes spanning 65.0° W to 129.0° W. After correcting azimuth, they <strong>gained 10° of additional arc visibility</strong>, adding 14 new satellites and 110 new transponders to the dataset.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">3</div>
+        <div class="step-body">
+          <h4>Blind scan the full Ku band</h4>
+          <p>Use <strong>EBSPro (Easy BlindScan Pro)</strong> — free 
+software — to sweep 10,700–12,750 MHz across H and V polarizations. 
+Symbol rate range: 100–70,000 KS/s. Step size: 1 MHz frequency, 1 KS/s 
+symbol rate. Record frequency, symbol rate, polarization, FEC, and 
+roll-off factor for every locked transponder into a structured database.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">4</div>
+        <div class="step-body">
+          <h4>Raw capture: disable the MPEG-TS filter</h4>
+          <p>This is the critical unlock. Linux DVB-S drivers discard any byte that isn't preceded by the MPEG-TS sync byte <code>0x47</code>. This silently drops all internet data. The fix: <strong>modify and recompile the TBS-5927 driver</strong> to forward raw demodulated data directly to the <code>demux0</code> device, bypassing this filter. Alternatively, in EBSPro, enable <em>"Raw data handling (do not use Internal EBSPro's filter)"</em> — available from version 18.0.0.2 RC onwards. The modified driver is open source on GitHub.</p>
+          <div class="signal-vis">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div>
+          </div>
+          <p>Use <code>dvbv5-zap</code> to automate locking onto each transponder from the database and recording 3–10 minutes of raw data to a <code>.ts</code> file.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert ok">
+      <span class="alert-icon">✅</span>
+      <p>After alignment: <strong>98.6% of all 411 transponders had SNR exceeding 6 dB</strong>. Median discarded-byte rate when parsing DVB-S2 frames: 0.1%. This is the signal quality needed for reliable protocol parsing.</p>
+    </div>
+  </section>
+
+  <!-- ── STEP 3: PARSE ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">3</div>
+      <div class="section-title">
+        <h2>Parse the Byte Stream</h2>
+        <span class="sub">7 protocol stacks. 5 of them previously undocumented. "A monument to suffering."</span>
+      </div>
+    </div>
+
+    <p>Getting from raw bytes to Wireshark-readable pcap is where the 
+real engineering happened. The team black-box reverse engineered the 
+protocol universe across 346 non-TV captures (411 total minus 65 TV 
+channels excluded).</p>
+
+    <p>The prior state-of-the-art tool, <strong>GSExtract</strong> 
+(Pavur et al., 2019), was designed for maritime traffic and handled only
+ one protocol variant. Here's how the two parsers compare on the same 
+dataset:</p>
+
+    <div class="comparison">
+      <div class="cmp-box theirs">
+        <h4>GSExtract (prior work)</h4>
+        <div class="cmp-num">52</div>
+        <p class="cmp-desc">transponders with any IP packets (15% of 346)</p>
+        <p class="cmp-desc" style="margin-top:8px; color:#475569;">26,421 total IP packets recovered</p>
+      </div>
+      <div class="cmp-box ours">
+        <h4>This paper's parser</h4>
+        <div class="cmp-num">238</div>
+        <p class="cmp-desc">transponders with IP packets (69% of 346)</p>
+        <p class="cmp-desc" style="margin-top:8px;">192,624 total IP packets — <strong>+627%</strong></p>
+      </div>
+    </div>
+
+    <p style="margin-top:16px;">The 7 protocol stacks handled, with transponder counts:</p>
+
+    <table class="proto-table">
+      <thead>
+        <tr>
+          <th>Physical</th>
+          <th>Link / Encap Layer</th>
+          <th>Transport</th>
+          <th># Transponders</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DVB-S</td>
+          <td>MPEG-TS → MPE</td>
+          <td>IPv4/IPv6</td>
+          <td><span class="num">43</span></td>
+        </tr>
+        <tr>
+          <td>DVB-S2(X)</td>
+          <td>BB Frames (CRC-32) → GSE non-std no-frag</td>
+          <td>IPv4/IPv6</td>
+          <td><span class="num">89</span> <span class="tag-new">NEW</span></td>
+        </tr>
+        <tr>
+          <td>DVB-S2(X)</td>
+          <td>BB Frames → GSE standard</td>
+          <td>IPv4/IPv6</td>
+          <td><span class="num">24</span></td>
+        </tr>
+        <tr>
+          <td>DVB-S2(X)</td>
+          <td>BB Frames (CRC-32) → GSE non-std 6/2 frag</td>
+          <td>IPv4/IPv6</td>
+          <td><span class="num">83</span> <span class="tag-new">NEW</span></td>
+        </tr>
+        <tr>
+          <td>DVB-S2(X)</td>
+          <td>BB Frames → MPEG-TS → MPE</td>
+          <td>IPv4/IPv6</td>
+          <td><span class="num">27</span></td>
+        </tr>
+        <tr>
+          <td>DVB-S2(X)</td>
+          <td>Byte-reversed 16-bit words → Unknown header</td>
+          <td>IP (blind extraction)</td>
+          <td><span class="num">18</span> <span class="tag-new">NEW</span></td>
+        </tr>
+        <tr>
+          <td>Raw bytes</td>
+          <td>Unknown / proprietary</td>
+          <td>Blind IPv4 header extraction</td>
+          <td><span class="num">13</span> <span class="tag-new">NEW</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="alert warn">
+      <span class="alert-icon">🧩</span>
+      <p><strong>The non-standard GSE quirk:</strong> 172 of 290 DVB-S2 
+captures use a modified GSE where: (1) the 12-bit length field is 
+off-by-2; (2) fragment IDs use a novel 6/2 scheme instead of standard 
+8-bit; (3) the CRC polynomial uses initial value <code>0x00000000</code> instead of the standard <code>0xffffffff</code>. GSExtract hardcodes one MATYPE value and gets this wrong for 36% of all DVB-S2 transponders it even attempts.</p>
+    </div>
+
+    <div class="steps" style="margin-top: 24px;">
+      <div class="step">
+        <div class="step-dot">A</div>
+        <div class="step-body">
+          <h4>DVB-S2(X) framing: find BB headers with CRC-8</h4>
+          <p>Raw captures may start mid-frame. Use the 1-byte CRC-8 over
+ the first 9 bytes of each Base-Band header as a filter. Assume UPL/DFL 
+lengths are multiples of 8 bits and <code>0 &lt; DFL ≤ 58,112</code> 
+bits. Validate candidate headers by checking that the next header also 
+passes — if it does, you've found a true boundary. Median discarded-byte
+ rate in valid captures: <strong>0.1%</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">B</div>
+        <div class="step-body">
+          <h4>Handle the CRC-32 variant (61% of DVB-S2 captures)</h4>
+          <p>177 of 296 captures include an additional CRC-32 over the header + data field. Reverse-engineered parameters: polynomial <code>0x104c11db7</code>, initial value <code>0x00000000</code>. Same polynomial as GSE CRC-32 but different init value. Validate this to confirm correct frame boundaries.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">C</div>
+        <div class="step-body">
+          <h4>Handle byte-swapped captures (6% of DVB-S2)</h4>
+          <p>18 captures swap byte order within every 16-bit word in the
+ data field. After un-swapping, normal IP headers become visible. This 
+was the proprietary encoding used by AT&amp;T Mexico, among others.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">D</div>
+        <div class="step-body">
+          <h4>Blind IP header extraction for unknown protocols</h4>
+          <p>For unknown encapsulation layers, scan the raw byte stream 
+for valid IPv4 headers (correct 4-bit version, reasonable length, valid 
+16-bit checksum) or IPv6 (correct version + common prefix). False 
+positive rate on random data: &lt; 0.001%. Top decile of unknown 
+captures: <strong>57.2%</strong> of bytes successfully identified as belonging to IP packets.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">E</div>
+        <div class="step-body">
+          <h4>Export as PCAP, open in Wireshark</h4>
+          <p>When traffic is unencrypted above IP, export complete IP 
+packets as PCAP files. Transport and application-layer protocols (HTTP, 
+SIP, DNS, RTP, SNMP, FTP, Telnet, etc.) appear in plaintext. Use TSDuck 
+and TShark for MPEG-TS streams, Binwalk for entropy analysis of 
+ambiguous captures.</p>
+        </div>
+      </div>
+    </div>
+
+    <blockquote>
+      "This is a monument to my suffering. There are multiple variants 
+of known protocols where they do something a little bit off the 
+implementation. I'm told they do it on purpose."
+      <cite>— Keegan Ryan</cite>
+    </blockquote>
+
+    <div class="code-block">
+      <div class="code-label">Example pipeline (open source on GitHub)</div>
+      <span class="c"># 1. Capture raw .ts file from transponder</span><br>
+      <span class="w">dvbv5-zap</span> <span class="y">-a 0 -f &lt;freq&gt; -S &lt;symbol_rate&gt; -m DVB-S2</span> <span class="g">-o raw_capture.ts</span><br><br>
+      <span class="c"># 2. Run multi-protocol parser</span><br>
+      <span class="w">python</span> parser.py <span class="y">--input</span> raw_capture.ts <span class="y">--output</span> <span class="g">output.pcap</span><br><br>
+      <span class="c"># 3. Analyze in Wireshark</span><br>
+      <span class="w">wireshark</span> output.pcap<br><br>
+      <span class="c"># Alternatively, run strings for quick recon</span><br>
+      <span class="w">strings</span> raw_capture.ts <span class="y">| grep</span> <span class="g">-i "password\|config\|admin"</span>
+    </div>
+  </section>
+
+  <!-- ── STEP 4: FINDINGS ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">4</div>
+      <div class="section-title">
+        <h2>What's in the Pcaps</h2>
+        <span class="sub">HTTPS everywhere worked — but not for critical infrastructure</span>
+      </div>
+    </div>
+
+    <p>From August 2024 through February 2025, across 346 non-TV transponders, the researchers found <strong>50% of GEO links carrying cleartext IP traffic</strong>. End-user consumer web traffic was almost universally encrypted via TLS/QUIC. Critical infrastructure was not.</p>
+
+    <div class="findings-grid">
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-telecom">Cell Backhaul — T-Mobile</div>
+        <h4>Full SMS &amp; Voice Call Contents</h4>
+        <p>3 satellite beams, footprint spanning part of North America. DVB-S2 → proprietary encapsulation → IP → GTP tunnel.</p>
+        <ul>
+          <li>Unprotected IMS signaling (SIP/RTP)</li>
+          <li>Plaintext SMS content (3GPP 7-bit GSM encoding in SIP MESSAGE payloads)</li>
+          <li>Unencrypted RTP voice streams</li>
+          <li>S1AP control plane, browsing history</li>
+          <li><strong>2,711 users' phone numbers</strong> from 9-hour recording</li>
+          <li>IPSec tunnel was present but used a <strong>null cipher</strong></li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-partial">PARTIAL</span>
+        <div class="tag t-telecom">Cell Backhaul — AT&amp;T Mexico</div>
+        <h4>Encryption Keys &amp; Network Identity</h4>
+        <p>1 beam. DVB-S2X with byte-reversed encapsulation. No IPSec at all.</p>
+        <ul>
+          <li>S1-C control plane: NBAP, S1AP, X2AP signaling</li>
+          <li>Secret KeNB session keys</li>
+          <li>IMSIs, PLMN codes, eNodeB Cell IDs</li>
+          <li>VoLTE/VoIP signaling (S1-U)</li>
+          <li><strong>710 users' phone numbers</strong> in 30-minute recording</li>
+          <li>Inner IPs including Facebook, Google</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-exposed">STILL EXPOSED</span>
+        <div class="tag t-telecom">VoIP — TelMex</div>
+        <h4>142 Voice Calls in 2 Minutes</h4>
+        <p>3 beams, covering part of North America. TelMex owns ~80% of phone lines in Mexico. No IPSec, plain IP packets.</p>
+        <ul>
+          <li>Cleartext SIP: caller/callee numbers, Call-ID, CSeq, SDP</li>
+          <li>Unencrypted RTP with ITU-T G.729 voice codec</li>
+          <li>WiFi location data (IEEE-802.11 access network IDs)</li>
+          <li><strong>142 voice conversations</strong> from a 2-minute, 167 MB capture</li>
+          <li>Multiple disclosure attempts — zero response</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-telecom">VoIP — KPU Telecommunications (Alaska)</div>
+        <h4>VPN That Terminated at the Modem</h4>
+        <p>Alaskan telecom. Secondary satellite link active only when main link fails. DVB-S2 with unidentified encapsulation.</p>
+        <ul>
+          <li>Plaintext SIP signaling for VoIP endpoints</li>
+          <li>Root cause: a VPN that <strong>unexpectedly terminated at the satellite modem</strong></li>
+          <li>KPU traced the misconfiguration and is working with customers to re-enable encryption</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-military">US Military</div>
+        <h4>Navy Vessel Traffic</h4>
+        <p>Two transponders. GSE with 6/2 fragmentation quirk + unknown header variant.</p>
+        <ul>
+          <li>Unencrypted DNS, ICMP, SIP, SNMP</li>
+          <li>Encrypted IPSec and TLSv1.2 traffic also present</li>
+          <li><strong>Ship names recovered from plaintext SIP packets</strong></li>
+          <li>All formerly private vessels now owned by the US military</li>
+          <li>DISA IP ranges, config files referencing Raven satellites</li>
+          <li>Traced to Inmarsat Government (acquired by Viasat)</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-partial">PARTIAL</span>
+        <div class="tag t-military">Mexico Government &amp; Military</div>
+        <h4>Real-Time Asset Tracking</h4>
+        <p>Multiple organizations: military, law enforcement, government
+ agencies. DVB-S2 with GSE 6/2 fragmentation and byte-reversed variants.</p>
+        <ul>
+          <li>Real-time GPS telemetry: aircraft, sea vessels, armored vehicles, LIDAR, RADAR</li>
+          <li>Law enforcement asset inventory, personnel records, traffic monitoring</li>
+          <li>Incident reporting, narcotics case tracking, evidence docs</li>
+          <li>Internal HTTP JSON/HTML web app responses</li>
+          <li>Navy transponder went dark after press coverage + Secretary of Defense asked about it on TV</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-retail">Walmart-Mexico Internal Network</div>
+        <h4>Telnet Credentials &amp; Inventory Data</h4>
+        <p>3 satellite beams. DVB-S2 → GSE 6/2 + byte-reversed variant. North America coverage.</p>
+        <ul>
+          <li><strong>Unencrypted Telnet</strong> to inventory management — plaintext credentials, terminal UI, invoice summaries</li>
+          <li>Unencrypted FTP: UPC/SKU numbers, retail/wholesale/cost prices, store layouts, sales data</li>
+          <li>Internal corporate emails in cleartext</li>
+          <li>NetBIOS employee activity monitoring notices</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-utility">CFE — Mexico's Largest Electric Utility</div>
+        <h4>Power Grid SCADA &amp; Customer Data</h4>
+        <p>Comisión Federal de Electricidad: 90,000 workers, 46 million 
+customers. 1 transponder, North America footprint. DVB-S2 → GSE 6/2.</p>
+        <ul>
+          <li>JSON maintenance work orders with locations, urgency, customer names/addresses/account numbers</li>
+          <li>Power grid provisioning identifiers for military zones and government buildings</li>
+          <li>Internal substation and administration infrastructure configs</li>
+          <li>Mechanical failures and safety hazard logs</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-finance">Grupo Santander Mexico</div>
+        <h4>ATM Infrastructure LDAP</h4>
+        <p>DVB-S2 → GSE 6/2 fragmentation. Traffic routed via TelMex-assigned IP blocks to satellite uplink.</p>
+        <ul>
+          <li>Unencrypted LDAP including <strong>segregated AD domain hierarchy dedicated to ATM infrastructure</strong></li>
+          <li>DNS for internal ATM domain names</li>
+          <li>TLS/IPSec certificates with internal PKI URLs (CRL, OCSP)</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-finance">Banjército &amp; Banorte</div>
+        <h4>Bank ATM &amp; POS Terminal Traffic</h4>
+        <p>Banjército (Mexican military bank) and Banorte (large commercial bank). DVB-S2 → GSE 6/2.</p>
+        <ul>
+          <li>DNS for financial operations and ATM/POS domains</li>
+          <li>CLDAP and LDAP authentication traffic</li>
+          <li>Destination IPs in Banjército private address space</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-fixed">FIXED</span>
+        <div class="tag t-aviation">In-Flight WiFi — Gogo &amp; Panasonic</div>
+        <h4>Passenger &amp; Crew Traffic, Partial RSA Keys</h4>
+        <p>40 transponders with "inflight" strings. References to 10+ airlines. Panasonic's stated policy: "rely on ubiquity of TLS."</p>
+        <ul>
+          <li>DNS hostnames for captive portals, pilot flight info systems</li>
+          <li>Unscrambled audio from seatback entertainment (video scrambled, audio not)</li>
+          <li>Proprietary bandwidth-compression protocol reverse engineered to expose passenger traffic</li>
+          <li>Partial PEM-encoded RSA private keys leaking from a device memory bug — <strong>full keys recovered</strong> (see below)</li>
+        </ul>
+      </div>
+
+      <div class="finding">
+        <span class="status-badge s-exposed">STILL EXPOSED</span>
+        <div class="tag t-telecom">VoIP — WiBo (Starsatel S.A. de C.V.)</div>
+        <h4>Rural Mexican VoIP Provider</h4>
+        <p>DVB-S2 → GSE 6/2. Provides broadband satellite and IP telephony to remote/rural areas.</p>
+        <ul>
+          <li>Clear-text SIP INVITE/ACK/BYE with caller/callee numbers, codecs, RTP ports</li>
+          <li>Unencrypted RTP: G.729 and G.711 audio — full call reconstruction possible</li>
+          <li>Large volumes of plaintext DNS (including queries to Google 8.8.8.8)</li>
+          <li>DNS resolving Apple iCloud, Android OS, TikTok, Samsung app store</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── BONUS: RSA KEY RECOVERY ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">🔑</div>
+      <div class="section-title">
+        <h2>Bonus: Recovering a Full RSA Private Key</h2>
+        <span class="sub">A device on the in-flight Wi-Fi network was leaking its own memory to the network</span>
+      </div>
+    </div>
+
+    <p>The in-flight Wi-Fi transponders contained something unexpected: 
+packets with partial PEM-encoded RSA private keys. Prior work (Pavur 
+2022) had noticed this and assumed the missing bytes were lost to signal
+ noise. With better parsing, the team confirmed the signal was fine — 
+the device had a memory leak bug.</p>
+
+    <div class="rsa-box">
+      <h3>What was observed in the satellite traffic</h3>
+      <p>Final 472–474 bytes of two PEM-encoded 2048-bit RSA private keys. After Base64 + DER decoding, this gave:</p>
+      <div class="rsa-known">
+        <span class="rk">KNOWN: 512 least-significant bits of d_p = d mod (p-1)</span><br>
+        <span class="rk">KNOWN: all 1024 bits of d_q = d mod (q-1)</span><br>
+        <span class="rk">KNOWN: all 1024 bits of q_inv = q⁻¹ mod p</span><br>
+        <span class="ru">UNKNOWN: public modulus n = p·q</span><br>
+        <span class="ru">UNKNOWN: most-significant bits of d_p</span>
+      </div>
+      <h3>Novel cryptanalytic recovery (new to this paper)</h3>
+      <p>No prior work recovered RSA private keys from only (LSB(d_p), d_q, q_inv). The team developed a new three-step attack:</p>
+      <p><strong>Step 1:</strong> Recover q. Since e·d_q ≡ 1 (mod q-1), 
+there are only 2^16 possible values for the cofactor k_q. Try each until
+ q = (e·d_q - 1)/k_q + 1 is integer and prime.</p>
+      <p><strong>Step 2:</strong> Reduce q·q_inv - 1 (a multiple of p) 
+from 2048 bits to ~1900 bits using elliptic curve factorization to 
+remove small prime factors.</p>
+      <p><strong>Step 3:</strong> Apply Coppersmith's method 
+(dimension-30 lattice) across all 2^16 values of k_p to recover the 
+unknown MSBs of d_p and thus recover p. Full private key recovered.</p>
+      <p style="margin-top: 12px;"><strong>Result:</strong> Both private keys fully compromised. The keys should be considered entirely broken.</p>
+    </div>
+  </section>
+
+  <!-- ── WHY ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">🤔</div>
+      <div class="section-title">
+        <h2>Why Is So Much Data Unencrypted?</h2>
+        <span class="sub">Structural disincentives, not just negligence</span>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-body">
+          <h4>Efficiency: encryption costs bandwidth they're paying for</h4>
+          <p>Encrypted data can't be compressed. IPSec ESP + IP headers 
+add 20–30 bytes of overhead per packet — non-trivial for VoIP. Panasonic
+ told the researchers that enabling encryption could incur a <strong>20–30% capacity loss</strong>. Off-grid terminals running on solar power face real power consumption constraints.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">2</div>
+        <div class="step-body">
+          <h4>Economics: encryption is sold as a paid add-on</h4>
+          <p>Historical pricing wars led satellite providers to unbundle
+ encryption as a separate license fee for the terminal's crypto 
+subsystem. There is no economic incentive for providers to protect 
+customer privacy, and a direct disincentive for customers to pay extra. 
+By contrast, satellite TV scrambling has been standard for 40 years — 
+because it protects revenue.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">3</div>
+        <div class="step-body">
+          <h4>Visibility: nobody could audit their own satellite links</h4>
+          <p>No auditing tools exist that allow vendors or customers to 
+check whether their satellite backhaul is actually encrypted. Multiple 
+organizations the team contacted <em>believed</em> they were encrypting.
+ In several cases, misconfiguration or software updates had silently 
+disabled encryption — the network continued working with no error 
+indication. <strong>The researchers had to validate that fixes worked, because the organizations had no way to verify themselves.</strong></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">4</div>
+        <div class="step-body">
+          <h4>Abstraction: layers of commercial contracts obscure accountability</h4>
+          <p>Satellite network connectivity often passes through 
+multiple service provider layers. The A 2021 US Executive Order and 2022
+ follow-up memo mandate zero-trust architecture for US government 
+infrastructure — requiring encryption on all internal networks. Even 
+with this mandate, the military had traffic running in the clear through
+ a commercial satellite provider chain.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-dot">5</div>
+        <div class="step-body">
+          <h4>Internal networks treated as trusted by default</h4>
+          <p>Organizations treat satellite backhaul as just another 
+transparent link in their private network. Since internal networks 
+aren't encrypted end-to-end (defense in depth is hard to deploy), adding
+ a satellite hop simply exposes whatever was already in plaintext — now 
+broadcast to a continent-sized footprint.</p>
+        </div>
+      </div>
+    </div>
+
+    <blockquote>
+      "It never occurred to me to think that a broadcaster would 
+accidentally broadcast clear text call contents to an entire continent. 
+Perhaps we can update our threat model."
+      <cite>— Nadia Heninger</cite>
+    </blockquote>
+
+    <div class="alert danger">
+      <span class="alert-icon">⛔</span>
+      <p><strong>Authentication risk:</strong> Unencrypted SCADA and 
+DNP3 industrial control traffic also lacks authentication. An attacker 
+who could broadcast to the satellite uplink — e.g., with a drone 
+positioned between a terminal and the satellite — could potentially 
+inject commands into the internal networks of utilities and critical 
+infrastructure. CFE and similar organizations were exposed to this risk.</p>
+    </div>
+  </section>
+
+  <!-- ── VENDOR LANDSCAPE ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">📋</div>
+      <div class="section-title">
+        <h2>Satellite Terminal Vendor Landscape</h2>
+        <span class="sub">All major vendors support encryption. Not all deployments enable it.</span>
+      </div>
+    </div>
+
+    <p>At least 10 vendors sell GEO IP terminal/hub systems in the North
+ American market, each with proprietary protocol stacks. The table below
+ covers the major ones. Supporting encryption and enabling it are very 
+different things.</p>
+
+    <table class="vendor-table">
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Link Layer Protocol</th>
+          <th>Link-Layer Crypto</th>
+          <th>Net-Layer Crypto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Gilat</td><td>SkyEdge (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-yes">✔ Supported</td></tr>
+        <tr><td>Hughes</td><td>HX/Jupiter (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-yes">✔ Supported</td></tr>
+        <tr><td>iDirect</td><td>iDirect (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-no">□ Optional</td></tr>
+        <tr><td>Comtech</td><td>Heights (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-no">□ Optional</td></tr>
+        <tr><td>ND SatCom</td><td>SKYWAN (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-no">□ Optional</td></tr>
+        <tr><td>STM</td><td>SatLink (DVB-S2)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-no">□ Optional</td></tr>
+        <tr><td>Newtec</td><td>Dialog (DVB-S2X)</td><td class="crypto-no">□ Optional</td><td class="crypto-yes">✔ Supported</td></tr>
+        <tr><td>Advantech</td><td>SatNet (DVB-S2X)</td><td class="crypto-no">□ Optional</td><td class="crypto-yes">✔ Supported</td></tr>
+        <tr><td>Viasat</td><td>ArcLight (DVB-S2X)</td><td class="crypto-yes">✔ Supported</td><td class="crypto-no">□ Optional</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert info">
+      <span class="alert-icon">ℹ</span>
+      <p>DVB-S2(X) also offers a <strong>physical-layer scrambling mode</strong>
+ for wireless transmission integrity — but reports suggest the default 
+key of "0" is common, which provides essentially no security. 
+Brute-forcing scrambling keys is possible but can take multiple days per
+ transponder.</p>
+    </div>
+  </section>
+
+  <!-- ── DISCLOSURE ── -->
+  <section>
+    <div class="section-header">
+      <div class="step-badge">📨</div>
+      <div class="section-title">
+        <h2>Responsible Disclosure Timeline</h2>
+        <span class="sub">Declined all NDAs. Used professional networks, LinkedIn, guessed security contacts.</span>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">December 19, 2024</div>
+        <h4>T-Mobile</h4>
+        <p>Security team was highly responsive. Quickly enabled 
+encryption. The vulnerability does not affect T-Mobile's new Starlink 
+LEO deployment.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">December 2024</div>
+        <h4>US Military</h4>
+        <p>Disclosed through appropriate channels. Transponders are no 
+longer active. Viasat (which acquired Inmarsat Government) said it would
+ take a few months — likely for ships to return to port for equipment 
+upgrades.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">January 14, 2025</div>
+        <h4>Walmart-Mexico</h4>
+        <p>Had in-depth conversations. Responsive.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">February 10, 2025</div>
+        <h4>AT&amp;T Mexico</h4>
+        <p>Mixed response. Transponders later disappeared — likely fixed.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">April 4, 2025</div>
+        <h4>CERT-MX (Mexico government bundle)</h4>
+        <p>Disclosed Mexican government, TelMex, Grupo Santander Mexico,
+ Banjército, and Banorte to Mexico's national CERT. Also reached out to 
+Grupo Santander directly on July 10.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">May 11–12, 2025</div>
+        <h4>Intelsat &amp; Panasonic Avionics</h4>
+        <p>Panasonic's position: they rely on TLS ubiquity for user 
+applications. In-flight WiFi infrastructure remains a "cafe WiFi" 
+analogy — on a continent-sized scale.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">July 8–20, 2025</div>
+        <h4>WiBo &amp; KPU Telecommunications</h4>
+        <p>KPU traced the issue to a VPN terminating unexpectedly at the
+ satellite modem. Working with affected customers to re-enable 
+encryption. TelMex: multiple attempts, zero response, still 
+broadcasting.</p>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  <div class="container">
+    <p><strong>Don't Look Up: There Are Sensitive Internal Links in the Clear on GEO Satellites</strong></p>
+    <p>Wenyi Morty Zhang, Annie Dai, Keegan Ryan, Dave Levin, Nadia Heninger, Aaron Schulman</p>
+    <p>CCS '25, October 13–17, 2025, Taipei, Taiwan — DOI: 10.1145/3719027.3765198</p>
+    <div class="footer-links">
+      <a href="https://satcom.sysnet.ucsd.edu/">Project Website &amp; Source Code</a>
+      <a href="https://satcom.sysnet.ucsd.edu/docs/dontlookup_ccs25_fullpaper.pdf">Full Paper (PDF)</a>
+      <a href="https://github.com/">Parser on GitHub</a>
+    </div>
+    <div class="nsf-badge">Supported by NSF grants CNS-1943240, CNS-2239163, MPS-2232481 and a gift from Qualcomm</div>
+    <p style="margin-top: 20px; font-size: 0.75rem; color: #334155;">For
+ security research and educational purposes. All findings disclosed to 
+affected vendors. Passive reception only — no transmissions, no uplink 
+interception.</p>
+  </div>
+</footer>
+
+
+
+</body></html>
