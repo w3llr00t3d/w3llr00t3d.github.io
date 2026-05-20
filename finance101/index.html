@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Finance 101 — Course Curriculum</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#080b12; --surface:#0e1220; --surface2:#151928; --surface3:#1c2236;
+      --border:#1e2540; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,.15);
+      --green:#34d399; --green-dim:rgba(52,211,153,.15);
+      --amber:#fbbf24; --amber-dim:rgba(251,191,36,.13);
+      --red:#f87171; --red-dim:rgba(248,113,113,.13);
+      --purple:#a78bfa; --purple-dim:rgba(167,139,250,.14);
+      --text:#e2e8f0; --muted:#6b7a99; --sidebar-w:290px;
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+
+    /* Sidebar */
+    #sidebar { position:fixed; inset:0 auto 0 0; width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; z-index:200; }
+    .sidebar-brand { padding:28px 22px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .brand-kicker { font-size:.65rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+    .brand-title { font-size:1.3rem; font-weight:800; }
+    .brand-sub { font-size:.75rem; color:var(--muted); margin-top:5px; }
+    .sidebar-search { padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+    #search { width:100%; padding:8px 12px; background:var(--surface3); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:.82rem; outline:none; }
+    #search:focus { border-color:var(--accent); }
+    #search::placeholder { color:var(--muted); }
+    .sidebar-nav { overflow-y:auto; flex:1; padding:6px 0 20px; }
+    .sidebar-nav ul { list-style:none; }
+    .nav-link { display:flex; align-items:flex-start; gap:10px; padding:9px 18px; text-decoration:none; transition:background .12s; }
+    .nav-link:hover { background:var(--surface3); }
+    .nav-link.active { background:var(--accent-dim); }
+    .nav-num { font-size:.68rem; font-weight:700; color:var(--accent); min-width:20px; padding-top:2px; flex-shrink:0; }
+    .nav-title { font-size:.78rem; color:var(--muted); line-height:1.45; flex:1; transition:color .12s; }
+    .nav-link:hover .nav-title, .nav-link.active .nav-title { color:var(--text); }
+    .nav-badge { font-size:.58rem; font-weight:700; padding:2px 6px; border-radius:4px; flex-shrink:0; margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
+
+    /* Main */
+    #main { margin-left:var(--sidebar-w); flex:1; }
+    .hero { background:linear-gradient(160deg,#0d1525,#0a1020); border-bottom:1px solid var(--border); padding:64px 72px 56px; }
+    .hero-kicker { font-size:.7rem; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+    .hero-title { font-size:2.8rem; font-weight:900; line-height:1.1; background:linear-gradient(135deg,#e2e8f0 30%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:18px; }
+    .hero-desc { font-size:1.05rem; color:#8892a4; max-width:620px; line-height:1.7; margin-bottom:36px; }
+    .hero-stats { display:flex; gap:40px; flex-wrap:wrap; }
+    .stat { display:flex; flex-direction:column; gap:4px; }
+    .stat-value { font-size:1.7rem; font-weight:800; }
+    .stat-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+    .progress-bar { display:flex; height:4px; border-bottom:1px solid var(--border); }
+    .pb-beginner  { background:var(--green); }
+    .pb-intermediate { background:var(--amber); }
+    .pb-advanced  { background:var(--red); }
+    .level-legend { display:flex; gap:24px; padding:14px 72px; border-bottom:1px solid var(--border); background:var(--surface); }
+    .legend-item { display:flex; align-items:center; gap:7px; font-size:.75rem; color:var(--muted); }
+    .legend-dot { width:8px; height:8px; border-radius:50%; }
+    .lessons-wrap { padding:0 72px 80px; }
+
+    /* Cards */
+    .lesson-card { margin:40px 0; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:border-color .2s; }
+    .lesson-card:hover { border-color:#2d3560; }
+    .lesson-full { border-color:rgba(79,142,247,.3); }
+    .lesson-full:hover { border-color:rgba(79,142,247,.5); }
+    .card-inner { padding:36px 40px; }
+    .card-header { margin-bottom:24px; }
+    .header-left { display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+    .lesson-num { font-size:.68rem; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--accent); background:var(--accent-dim); padding:4px 10px; border-radius:6px; }
+    .full-badge { font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:3px 9px; border-radius:5px; background:rgba(79,142,247,.2); color:var(--accent); border:1px solid rgba(79,142,247,.3); }
+    .lesson-title { font-size:1.35rem; font-weight:700; line-height:1.3; }
+    .overview { font-size:.95rem; line-height:1.8; color:#9aa5be; margin-bottom:28px; max-width:820px; }
+    .section-block { margin-bottom:24px; }
+    .section-label { font-size:.65rem; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+    .tags { display:flex; flex-wrap:wrap; gap:8px; }
+    .tag { font-size:.78rem; padding:5px 12px; background:var(--surface3); border:1px solid var(--border); border-radius:20px; color:#9aa5be; }
+    .takeaways { list-style:none; display:flex; flex-direction:column; gap:10px; }
+    .takeaways li { font-size:.9rem; line-height:1.7; color:#c5cde0; padding-left:20px; position:relative; }
+    .takeaways li::before { content:'→'; position:absolute; left:0; color:var(--accent); font-weight:700; }
+    .case-studies { display:flex; align-items:flex-start; gap:16px; padding:16px 20px; background:var(--surface2); border-radius:10px; border:1px solid var(--border); }
+    .cs-label { font-size:.65rem; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:var(--purple); flex-shrink:0; padding-top:4px; }
+    .cs-tags { display:flex; flex-wrap:wrap; gap:8px; }
+    .cs-tag { font-size:.78rem; padding:4px 11px; background:var(--purple-dim); border:1px solid rgba(167,139,250,.2); border-radius:20px; color:var(--purple); }
+    .level-beginner     { background:var(--green-dim); color:var(--green); }
+    .level-intermediate { background:var(--amber-dim); color:var(--amber); }
+    .level-advanced     { background:var(--red-dim);   color:var(--red);   }
+    .level-badge { font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:3px 9px; border-radius:5px; }
+
+    /* Prose */
+    .lesson-prose { font-family:Georgia,serif; max-width:820px; }
+    .lesson-prose .part-heading {
+      font-family:'Segoe UI',sans-serif; font-size:.7rem; font-weight:800;
+      letter-spacing:.18em; text-transform:uppercase; color:var(--accent);
+      margin:48px 0 20px; padding-bottom:12px; border-bottom:1px solid var(--border);
+    }
+    .lesson-prose .sub-heading {
+      font-family:'Segoe UI',sans-serif; font-size:1.1rem; font-weight:700;
+      color:var(--text); margin:32px 0 14px; line-height:1.3;
+    }
+    .lesson-prose p { font-size:1rem; line-height:1.9; color:#bdc8dc; margin-bottom:1.2em; }
+    .lesson-prose .formula {
+      font-family:'Courier New',monospace; font-size:.9rem;
+      background:var(--surface3); border:1px solid var(--border);
+      border-left:3px solid var(--accent); padding:12px 20px;
+      border-radius:6px; color:var(--accent); margin:20px 0; letter-spacing:.02em;
+    }
+    .numbered-item {
+      display:flex; gap:20px; margin:24px 0; padding:20px 24px;
+      background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    }
+    .item-num { font-family:'Segoe UI',sans-serif; font-size:1.4rem; font-weight:900; color:var(--accent); opacity:.5; flex-shrink:0; line-height:1; padding-top:3px; }
+    .item-body strong { font-family:'Segoe UI',sans-serif; font-size:1rem; font-weight:700; color:var(--text); display:block; margin-bottom:10px; }
+    .item-body p { margin-bottom:0; }
+
+    @media(max-width:960px){
+      :root{--sidebar-w:0px;}
+      #sidebar{display:none;}
+      #main{margin-left:0;}
+      .hero,.lessons-wrap,.level-legend{padding-left:24px;padding-right:24px;}
+      .hero-title{font-size:2rem;}
+      .card-inner{padding:24px;}
+    }
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-kicker">Course Curriculum</div>
+    <div class="brand-title">Finance 101</div>
+    <div class="brand-sub">20 Lessons · Martin Shkreli</div>
+  </div>
+  <div class="sidebar-search">
+    <input id="search" type="search" placeholder="Filter lessons…" autocomplete="off"/>
+  </div>
+  <nav class="sidebar-nav"><ul id="nav-list"><li><a href="#lesson-1" class="nav-link"><span class="nav-num">01</span><span class="nav-title">Introduction to Investing and Finance</span><span class="nav-badge level-beginner">★ Beginner</span></a></li>
+<li><a href="#lesson-2" class="nav-link"><span class="nav-num">02</span><span class="nav-title">Income Statements, Balance Sheets, and Present Value Discounting</span><span class="nav-badge level-beginner">★ Beginner</span></a></li>
+<li><a href="#lesson-3" class="nav-link"><span class="nav-num">03</span><span class="nav-title">Apple Model, Discounting Cash Flows, and Scuttlebutt Research</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-4" class="nav-link"><span class="nav-num">04</span><span class="nav-title">IBM Model and Valuation</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-5" class="nav-link"><span class="nav-num">05</span><span class="nav-title">Tech Industry Universe, Depreciation, and Cash Flow</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-6" class="nav-link"><span class="nav-num">06</span><span class="nav-title">Passive vs. Active Investing, Fund Types, and Facebook User Analysis</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-7" class="nav-link"><span class="nav-num">07</span><span class="nav-title">Risk Measures, Share Counts, GAAP vs. Non-GAAP, and Growth vs. Risk</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-8" class="nav-link"><span class="nav-num">08</span><span class="nav-title">Short Selling, Wall Street Structure, ADRs, and Sector Selection</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-9" class="nav-link"><span class="nav-num">09</span><span class="nav-title">Hedge Fund Structure and Twitter Analysis</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-10" class="nav-link"><span class="nav-num">10</span><span class="nav-title">Valeant Pharmaceuticals Deep Dive</span><span class="nav-badge level-advanced">Advanced</span></a></li>
+<li><a href="#lesson-11" class="nav-link"><span class="nav-num">11</span><span class="nav-title">eBay Valuation and E-Commerce Competitive Landscape</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-12" class="nav-link"><span class="nav-num">12</span><span class="nav-title">Netflix Valuation and Subscription Business Modeling</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-13" class="nav-link"><span class="nav-num">13</span><span class="nav-title">International Investing and Recommended Reading</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-14" class="nav-link"><span class="nav-num">14</span><span class="nav-title">Yahoo Deep Dive and Primary Research Methods</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-15" class="nav-link"><span class="nav-num">15</span><span class="nav-title">Stamps.com (STMP) Analysis and SaaS Business Models</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-16" class="nav-link"><span class="nav-num">16</span><span class="nav-title">RealPage Analysis and Scale Economics</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-17" class="nav-link"><span class="nav-num">17</span><span class="nav-title">Groupon Analysis, Convertible Bonds, and Portfolio Review</span><span class="nav-badge level-intermediate">Intermediate</span></a></li>
+<li><a href="#lesson-18" class="nav-link"><span class="nav-num">18</span><span class="nav-title">Salesforce.com Analysis, Hedge Fund Holdings (13F), and Tiger Fund Complex</span><span class="nav-badge level-advanced">Advanced</span></a></li>
+<li><a href="#lesson-19" class="nav-link"><span class="nav-num">19</span><span class="nav-title">Macroeconomics, S&amp;P 500 Historical Returns, and Investor Psychology</span><span class="nav-badge level-advanced">Advanced</span></a></li>
+<li><a href="#lesson-20" class="nav-link"><span class="nav-num">20</span><span class="nav-title">Adobe Systems Analysis and Subscription Transition Modeling</span><span class="nav-badge level-advanced">Advanced</span></a></li></ul></nav>
+</aside>
+
+<main id="main">
+  <div class="hero">
+    <div class="hero-kicker">Finance 101</div>
+    <h1 class="hero-title">Investing &amp; Finance<br>From First Principles</h1>
+    <p class="hero-desc">A ground-up curriculum covering financial statements, company valuation, portfolio construction, and real-world stock analysis. Each lesson builds on the last — from reading an income statement to running a full DCF.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-value">20</span><span class="stat-label">Lessons</span></div>
+      <div class="stat"><span class="stat-value">2</span><span class="stat-label">Full Lessons</span></div>
+      <div class="stat"><span class="stat-value">141</span><span class="stat-label">Key Concepts</span></div>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="pb-beginner"  style="flex:2"></div>
+    <div class="pb-intermediate" style="flex:14"></div>
+    <div class="pb-advanced"  style="flex:4"></div>
+  </div>
+  <div class="level-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Beginner (2 lessons)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Intermediate (14 lessons)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Advanced (4 lessons)</div>
+  </div>
+  <div class="lessons-wrap">
+    <section class="lesson-card lesson-full" id="lesson-1">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 01</div>
+        <span class="level-badge level-beginner">Beginner</span>
+        <span class="full-badge">Full Lesson</span>
+      </div>
+      <h2 class="lesson-title">Introduction to Investing and Finance</h2>
+    </div>
+    <div class="lesson-prose"><h2 class="part-heading">Introduction To Investing And Finance</h2>
+<h3 class="sub-heading">Lesson 1: Foundations of Financial Thinking</h3>
+<h2 class="part-heading">Lesson Introduction</h2>
+<p>This lesson lays the groundwork for everything that follows in your finance education. Before you can evaluate a company, read a balance sheet, or make an informed investment decision, you need to understand what investing actually is — and perhaps more importantly, what it is not.</p>
+<p>Too many people approach the stock market with misplaced expectations, bad habits they picked up from the wrong sources, and a wildly unrealistic sense of what returns are achievable. This lesson corrects those misconceptions from the start. You will learn how professional investors actually think about careers, returns, and the role of skill versus luck. Then you will move into the practical fundamentals: what an asset is, how stock ownership works, and the six essential metrics every investor must examine before forming an opinion on any company. Finally, you will get your first real look at the balance sheet — the most important of the three financial statements — and understand why concepts like market capitalization and enterprise value are not just jargon, but essential tools for seeing through the surface of any investment.</p>
+<p>By the time you finish this lesson, you will have a working vocabulary and a conceptual framework that will support everything you learn going forward.</p>
+<h2 class="part-heading">Part One: Setting Realistic Expectations</h2>
+<h3 class="sub-heading">Why Most People Approach Investing Wrong</h3>
+<p>The single biggest problem with how people think about investing is that they confuse being able to open a trading account with being able to invest successfully. The accessibility of the stock market creates a dangerous illusion that the skill barrier is equally low. It is not. There are entire buildings full of highly educated, obsessively focused professionals who dedicate every waking hour to investing, and many of them still fail to beat simple market averages. The idea that you can outperform the market by checking stock prices on your phone during lunch breaks is, to put it plainly, wrong.</p>
+<p>This is not meant to discourage you. It is meant to reorient you. The goal of this lesson is not to give you stock tips or a shortcut to wealth. The goal is to start building genuine expertise — because expertise, not luck, is what produces consistent, sustainable results over a lifetime.</p>
+<p>The Two Paths: OPM vs. the Family Office</p>
+<p>When you think about how serious investors actually make money, there are really only two models. The first is what professionals call OPM — Other People&#x27;s Money. This is the model that applies to virtually everyone who has ever made a significant career in finance: hedge fund managers, private equity professionals, venture capitalists, analysts at major banks. They build their wealth by developing skill, attracting capital from investors, and earning fees and a share of profits on that capital.</p>
+<p>The second model is the family office — managing only your own money, with no outside investors. This path is available to a tiny handful of people: George Soros, Carl Icahn, Michael Bloomberg, Michael Dell, Steven Cohen, Bill Gates (whose family office is called Cascade). If you look at that list, you will notice something they all have in common: they are among the wealthiest people on earth. Most of them built substantial capital through OPM first, before transitioning to managing only their own money.</p>
+<p>The lesson here is not that you can never become wealthy through investing. The lesson is that the path to doing so almost certainly runs through demonstrating your skill to others first, getting paid for that skill, and building capital incrementally over a long career. The fantasy of turning a small personal account into a fortune directly is not impossible — but it is statistically uncommon enough that building your strategy around it is a mistake.</p>
+<h3 class="sub-heading">What &quot;Good&quot; Returns Actually Look Like</h3>
+<p>Here is a number that surprises most people: the very best investors in the world, over long time horizons, tend to produce annual returns of somewhere between 15% and 20%. That is exceptional. Most serious, successful investors deliver returns in the 10% to 15% range. Anything above 20% sustained over many years is genuinely extraordinary, and if someone claims it routinely, you should be skeptical.</p>
+<p>Warren Buffett, widely considered the greatest investor of all time, has averaged approximately 15% annual returns over his career. That number sounds modest until you run it through a compound interest calculator. Fifteen percent per year, compounded over 30 or 40 years on a large pool of capital, produces staggering wealth. This is the power of compounding — not a single spectacular trade, but a reliable process applied consistently for decades.</p>
+<p>Renaissance Technologies, run by mathematician Jim Simons, is a famous exception that produced returns above 50% annually for an extended period. But it is worth understanding what Renaissance actually did: it was a quantitative, algorithmic trading operation that functioned more like a technology company than a traditional investment firm. It is not a model that can be replicated through conventional stock analysis.</p>
+<p>The practical implication for you is this: if you are modeling your future performance, use conservative numbers. A 7% annual return, maintained consistently over a lifetime, is a genuinely excellent outcome. Do not build your plans around 30%, 50%, or higher annual returns. Those numbers are either temporary, lucky, or both.</p>
+<p>The Danger of Mistaking Luck for Skill</p>
+<p>One of the most destructive patterns in investing is what happens when someone makes money for a few years in a row and concludes that they have found a permanent edge. It happens constantly. A trader develops a strategy that works brilliantly during a specific market regime — say, one where volatility is persistently mispriced — and for five years they make extraordinary returns. They tell themselves they are the best volatility trader alive. Then the conditions that made their strategy work change, and for the next 30 years the same strategy produces nothing. They cannot adapt because they have built their entire identity around an approach that was actually circumstantial luck dressed up as skill.</p>
+<p>This is a genuinely hard thing to guard against, because our brains are wired to find patterns and to attribute success to our own brilliance. When you make money, the natural instinct is to ask: what did I do right? When you should sometimes be asking: was this just the right market environment for anyone running my strategy?</p>
+<p>The healthy corrective is to constantly, honestly audit your own results. Did you make money because you were right about something others missed? Or did you make money because the market went up, and anything you bought went up with it? These are very different things, and they call for very different responses.</p>
+<h2 class="part-heading">Part Two: Building A Career In Finance</h2>
+<p>The Importance of Self-Assessment</p>
+<p>Investing is not a field where you can fake your way through with surface confidence. It requires a deep, honest inventory of your own strengths and weaknesses — and the willingness to update that inventory as you grow.</p>
+<p>Think about what kind of thinker you are. Are you creative? Can you construct investment theses that others have not considered? Or are you more analytical — better at rigorously stress-testing an idea than generating one from scratch? Are you disciplined in the face of loss, or do you find yourself doubling down on bad positions because admitting defeat feels intolerable? Do you have the stamina for the relentless, obsessive research that serious investing demands?</p>
+<p>These questions matter because your weaknesses in investing are not like weaknesses in most fields, where a small deficiency can be compensated by other strengths. In investing, a single weakness — say, poor discipline when a position moves against you — can wipe out everything you built through your strengths. The most successful investors know exactly where they are vulnerable and structure their process to account for it.</p>
+<h3 class="sub-heading">Mentors and the Quality of Advice</h3>
+<p>Be very selective about whose investment advice you take seriously. This is a field with an enormous amount of noise — confident-sounding people who present themselves as experts but whose actual track records are thin or nonexistent. The money industry is unique in that there is a clear, objective measure of success: how much have you made, over how long a period, managing real capital?</p>
+<p>The right mentors are people who have genuinely made significant money managing capital — not people who are good at talking about managing capital, not people who made money once in a hot market, but people with long, verified track records of investment success. Seek those people out. Be persistent about it. A famous story illustrates the point: the young Albert Einstein looked up Max Planck&#x27;s address and simply knocked on his door. He got a three-hour meeting. If you are genuinely good at something and you put your ear to the ground, the path to the right people is shorter than you think.</p>
+<p>The corollary is equally important: avoid picking up bad habits from bad teachers. Bad habits in investing are particularly insidious because they feel like reasonable instincts. Buying a stock because it has fallen sharply and looks &quot;cheap&quot; is one of the most common bad habits. Another is averaging into a losing position — buying more shares of something that is going against you on the assumption that it must eventually recover. Experienced investors have a phrase for this: losers average into losers. The market has no obligation to validate your original thesis just because you have more money on it.</p>
+<p>The Long View on Career Development</p>
+<p>Expertise in investing takes years to develop, not months. Give yourself permission to spend years learning before you expect to be excellent at this. The professional investors who do best are almost always people who have spent a long time in apprentice roles — as analysts, as associates at hedge funds or private equity firms — building their knowledge base and their judgment before they ever had real capital responsibility. There is enormous value in being wrong on someone else&#x27;s money early in your career, when the consequences are a learning experience rather than a catastrophe.</p>
+<p>It is also worth being honest about the fact that your interests and strengths may shift over time. Someone who enters finance at 22 convinced they will analyze stocks for the rest of their life may discover at 30 that they are more interested in building companies, or in real estate, or in a completely different field. Being cognizant of this — and willing to follow your genuine interests rather than your earlier assumptions about what you would want — is itself a form of career intelligence.</p>
+<h2 class="part-heading">Part Three: Asset Classes And The Nature Of Equity</h2>
+<h3 class="sub-heading">What Is an Asset?</h3>
+<p>An asset is anything of value that can be transacted — bought, sold, or transferred. It can be a stock, a bond, cash, currency, real estate, intellectual property, or anything else that has a price at which buyers and sellers will trade. In finance, we group assets into categories called asset classes, which helps us understand their behavior, risk profiles, and how they relate to one another.</p>
+<p>The major asset classes you will encounter are:</p>
+<p>Equities (stocks): Ownership shares in a business, whether that business is publicly traded on a stock exchange or privately held.</p>
+<p>Bonds (debt or credit): Loans to governments or companies, which pay the lender interest and eventually return the principal. Bonds are obligations — financial promises — rather than ownership stakes.</p>
+<p>Cash and cash equivalents: Currency, money market instruments, and short-term securities that can be converted to cash almost instantly with little risk of loss of value.</p>
+<p>Real estate, commodities, and alternatives: A broad category that includes property, raw materials, and more exotic instruments.</p>
+<p>A critical point: you should not limit your investing knowledge to one asset class. Many investors who focus exclusively on public equities miss important lessons that bond markets teach about credit risk, corporate capital structure, and the relationship between interest rates and asset prices. Investors who also understand private equity develop a much richer appreciation for how businesses are actually valued. The best investors are fluent across multiple asset classes.</p>
+<h3 class="sub-heading">Understanding Equity: Shares and Ownership</h3>
+<p>When you buy a share of stock, you are buying a fractional ownership stake in a business. The word &quot;equity&quot; comes from the Latin for equal — and the core idea is that every share is equal to every other share of the same class. One share of Coca-Cola owned by a small investor is legally identical to one share owned by an institutional investor holding a billion dollars worth of the same stock. They are the same thing. The institutional investor simply has more of them.</p>
+<p>Think of a company as a pie. The whole pie is the company. Each share is a slice. When you and three other people start a company and agree that you each own 25%, you each own one quarter of the pie. This analogy is useful because it makes the core mathematics tangible: the value of your slice depends on both the price of each slice and how many slices there are in total.</p>
+<h3 class="sub-heading">What Determines a Stock&#x27;s Price?</h3>
+<p>The price of a stock at any given moment is simply the last price at which two parties — a buyer and a seller — agreed to trade that stock. This is called the &quot;last price,&quot; and it is the price you see quoted on any financial website. Every time someone sells a share at a new price, that becomes the current price. The price fluctuates constantly during trading hours as different buyers and sellers come to the market with different views on what the stock is worth.</p>
+<p>Here is something important: the stock price alone tells you almost nothing meaningful about a company&#x27;s size or value. A stock trading at $500 per share might belong to a smaller company than a stock trading at $43 per share. What matters is how many shares there are in total, which brings us to the next concept.</p>
+<h2 class="part-heading">Part Four: The Six Things To Look At For Every Stock</h2>
+<p>Before you form any opinion on any company, there are six numbers you need to look up. These six are the starting point every time, for any company, in any industry.</p>
+<div class="numbered-item"><span class="item-num">1</span><div class="item-body"><strong>Stock Price</strong>
+</div></div>
+<p>The price of one share, as of the most recent trade. This is the easiest number to find — any financial website will display it. Sites like Yahoo Finance (finance.yahoo.com) show the current and historical price for any public company. You can search by company name or by ticker symbol. Coca-Cola&#x27;s ticker is KO; Southwest Airlines is LUV; Chipotle is CMG.</p>
+<p>Remember: this number is not meaningful on its own. Its significance only emerges in combination with the number of shares outstanding.</p>
+<div class="numbered-item"><span class="item-num">2</span><div class="item-body"><strong>Shares Outstanding</strong>
+</div></div>
+<p>The total number of shares that exist for the company. This is found in the company&#x27;s filings with the Securities and Exchange Commission (SEC), specifically in the 10-K (annual report) or 10-Q (quarterly report). The SEC&#x27;s filing search tool at SEC.gov allows you to search any public company&#x27;s filings by company name or stock ticker. Navigate to a recent 10-K or 10-Q and the shares outstanding figure typically appears on the first page.</p>
+<p>To illustrate the range: Coca-Cola has approximately 4.3 billion shares outstanding. Chipotle has only about 30 million shares outstanding, and its stock trades near $500 per share. Without knowing shares outstanding, you might look at those prices and assume Chipotle is a larger company than Coca-Cola. It is not, by a very wide margin. You need both numbers.</p>
+<div class="numbered-item"><span class="item-num">3</span><div class="item-body"><strong>Market Capitalization</strong>
+</div></div>
+<p>Market capitalization (commonly shortened to &quot;market cap&quot;) is the product of stock price multiplied by shares outstanding. It represents the total market value of all the company&#x27;s outstanding shares — in other words, what it would cost you to buy every single share at the current price.</p>
+<h3 class="sub-heading">Market Cap = Stock Price x Shares Outstanding</h3>
+<p>Coca-Cola, at roughly $43 per share with 4.3 billion shares outstanding, has a market cap of approximately $185 billion. Chipotle, despite its much higher share price, has a market cap of roughly $15 billion — because it has far fewer shares. Southwest Airlines comes in at approximately $27 billion. JetBlue is approximately $7 billion. And a small company like Agerium Pharmaceuticals, a tiny drug developer with an FDA-approved product for a rare disease, might have a market cap of only $163 million — less than one-thousandth the size of Coca-Cola.</p>
+<p>As of early 2016, the largest company in the world by market capitalization was Apple at approximately $537 billion, followed by Alphabet (Google&#x27;s parent company), Microsoft, and ExxonMobil. Five of the top ten largest companies in the world are technology companies.</p>
+<p>Market cap is the number that actually tells you how big a company is. Stock price is noise until you put it in context.</p>
+<div class="numbered-item"><span class="item-num">4</span><div class="item-body"><strong>Cash</strong>
+</div></div>
+<p>How much cash does the company hold? To find this, open the company&#x27;s 10-K or 10-Q filing and navigate to the balance sheet. Look for line items labeled &quot;cash and cash equivalents,&quot; &quot;short-term investments,&quot; &quot;marketable securities,&quot; and similar entries.</p>
+<p>A nuanced point: when thinking about what counts as cash, it is reasonable to include not just the cash line but also highly liquid investments — things like treasury bonds or short-term investment securities that can be converted to cash quickly and whose value is essentially certain. Accounts receivable (money owed to the company by its customers) is a judgment call — it is close to cash but not quite, since there is always some delay and some risk of non-collection. Inventory is further away from cash still; you need to sell it first.</p>
+<p>Coca-Cola, for example, holds approximately $35 billion in what can reasonably be called cash and cash-like assets when you add up all the relevant line items on their balance sheet. Chipotle holds about $1 billion in cash and investments. JetBlue holds about $800 million in cash and investment securities.</p>
+<div class="numbered-item"><span class="item-num">5</span><div class="item-body"><strong>Debt</strong>
+</div></div>
+<p>How much does the company owe to lenders? On the balance sheet, look for &quot;long-term debt,&quot; &quot;current portion of long-term debt,&quot; and any other debt-related liability line items. Add them up.</p>
+<p>Debt is not inherently bad. Large, creditworthy companies routinely borrow money at relatively low interest rates and deploy that capital productively — to fund acquisitions, pay dividends, or buy back their own stock. What matters is how much debt a company carries relative to the cash it generates and the cash it holds. Too much debt, and a business becomes vulnerable: if revenue falls unexpectedly, or if an industry faces structural headwinds, the debt can drag a company into bankruptcy.</p>
+<p>Coca-Cola carries approximately $44 billion in total debt — more than its $35 billion in cash. JetBlue carries about $2 billion in debt against roughly $800 million in cash — modest for an airline. Southwest carries debt roughly in line with its cash. Chipotle, notably, carries essentially no debt at all, which reflects a management philosophy of financial conservatism.</p>
+<div class="numbered-item"><span class="item-num">6</span><div class="item-body"><strong>Enterprise Value</strong>
+</div></div>
+<p>Enterprise value is the most important of the six metrics, and the one that requires the most explanation to grasp properly.</p>
+<p>The formula is:</p>
+<h3 class="sub-heading">Enterprise Value = Market Cap - Cash + Debt</h3>
+<p>Or equivalently: Enterprise Value = Market Cap + Net Debt (where Net Debt = Debt minus Cash)</p>
+<p>Here is why enterprise value matters. When you think about what you are really paying to own a business, market cap alone is incomplete. Imagine buying a private company from a family member. You agree to pay $10 million for all the shares. But when you examine the books, you discover the company has $30 million in bank debt that you will now be responsible for, and $10 million in cash sitting in its accounts.</p>
+<p>What did you really just pay? You paid $10 million in stock consideration, absorbed $30 million in debt (a real cost to you), and received $10 million in cash (a benefit). The true economic cost — the enterprise value — is:</p>
+<p>$10 million market cap + $30 million debt - $10 million cash = $30 million enterprise value</p>
+<p>That $30 million is what you actually paid for the operating business itself. If the business earns $10 million a year, you will break even in three years — not one.</p>
+<p>Now consider the reverse: you buy a company for $5 million in stock, it has no debt, and you discover it holds $3 million in cash. Your effective cost for the operating business is only $2 million. If the business earns $1 million per year, you recover your investment in just two years.</p>
+<p>Enterprise value allows you to make these apples-to-apples comparisons across companies with very different capital structures. When evaluating how expensive or cheap a business is relative to its earnings, use enterprise value as your denominator — not market cap. Market cap can be deeply misleading because it ignores whether the company is sitting on a mountain of cash or buried under debt.</p>
+<p>For Coca-Cola: $187 billion market cap, minus $35 billion in cash, plus $44 billion in debt, gives an enterprise value of approximately $196 billion. The business itself is worth a bit more than the stock market surface suggests, because the debt more than offsets the cash.</p>
+<h2 class="part-heading">Part Five: The Three Financial Statements</h2>
+<p>An Introduction to the Holy Trinity of Business Analysis</p>
+<p>Every public company in the United States is required by the SEC to file periodic financial reports. The annual report (called the 10-K) and quarterly reports (called 10-Qs) contain three core financial statements that are the foundation of all fundamental analysis. You will need to master all three. This lesson introduces them and goes into the balance sheet in meaningful depth.</p>
+<p>The three financial statements are: the Balance Sheet, the Income Statement, and the Cash Flow Statement.</p>
+<p>Think of these three statements as three different lenses on the same business. Each shows you something the others do not. Taken together, they give you a comprehensive picture of where a company stands, how it performs, and where its money actually goes.</p>
+<p>The Balance Sheet</p>
+<p>The balance sheet is a snapshot — a photograph taken at a specific moment in time (typically the end of a fiscal quarter or year) that shows every significant balance the company carries. Unlike the income statement or cash flow statement, which cover a period of time, the balance sheet is always &quot;as of&quot; a particular date.</p>
+<p>The balance sheet is organized into three sections:</p>
+<p>Assets: Everything the company owns or controls that has economic value. Assets are typically listed in descending order of liquidity — cash first, then near-cash items, then longer-term assets like property and equipment. Key asset line items include cash and cash equivalents, short-term investments, accounts receivable (money that customers owe the company), inventory (goods ready for sale), and property, plant, and equipment (PPE — buildings, manufacturing facilities, and in the case of airlines, aircraft).</p>
+<p>Liabilities: Everything the company owes to others. These include accounts payable (money the company owes its vendors), long-term debt and its current portion, accrued expenses, deferred revenue, and other obligations.</p>
+<p>Shareholders&#x27; Equity: The residual — what is left over after you subtract total liabilities from total assets. This is sometimes called &quot;book value&quot; and represents the net worth of the company from a strict accounting perspective.</p>
+<p>The fundamental identity of the balance sheet is:</p>
+<h3 class="sub-heading">Assets = Liabilities + Shareholders&#x27; Equity</h3>
+<p>This equation must always hold. That is precisely why it is called a balance sheet — it always balances. Every transaction a business makes affects at least two line items in a way that preserves this equality.</p>
+<h3 class="sub-heading">Accounts Receivable and What &quot;Near Cash&quot; Means</h3>
+<p>Accounts receivable represents money that customers owe the company for goods or services already delivered. For most businesses, customers do not pay instantly; in corporate America, payment terms of 45 to 60 days are typical. So accounts receivable is not cash — but it is usually reasonably close to cash, assuming the customers are creditworthy. Not all receivables will be collected, which is why companies maintain a reserve for &quot;doubtful accounts.&quot;</p>
+<p>Whether you treat accounts receivable as cash-like depends on context. For the purpose of the six metrics framework above, a conservative approach is to include only truly liquid items — bank deposits, short-term investments, and marketable securities — and leave accounts receivable out of your cash figure.</p>
+<h3 class="sub-heading">Leverage and Capital Structure</h3>
+<p>Pay attention to how any company manages the relationship between cash and debt — what finance professionals call its leverage or capital structure. Some companies carry no debt (Chipotle). Others carry debt that roughly matches their cash (Southwest Airlines). Others carry substantially more debt than cash (Coca-Cola, many airlines). None of these is automatically good or bad.</p>
+<p>What you want to understand is whether the level of debt is appropriate given the business&#x27;s earnings and cash flows. A company earning $700 million per year and carrying $900 million in net debt is in a manageable position — it can effectively pay off that debt in roughly a year of earnings. A company earning $2 million per year with $20 million in debt faces a decade of repayment, during which any disruption to the business is potentially fatal.</p>
+<p>The Japanese corporate experience of the 1980s and 1990s offers a cautionary tale: companies borrowed heavily during a period of economic exuberance, the bubble burst, and many found themselves unable to service their obligations. The trauma was deep enough that Japanese companies remain unusually debt-averse decades later, often holding enormous cash reserves and refusing to borrow even when cheap debt is available.</p>
+<p>The Income Statement</p>
+<p>The income statement covers a period of time — a quarter or a year — and tells you about the business&#x27;s economic performance during that period. Where the balance sheet is a photograph, the income statement is a video.</p>
+<p>The basic structure is elegant in its simplicity: start with revenue, subtract all costs, and arrive at profit.</p>
+<p>Revenue (also called sales or, in some international contexts, &quot;turnover&quot;) is the total money the company received from selling its goods or services during the period. For JetBlue, this is primarily ticket sales — approximately $6.4 billion for fiscal year 2015.</p>
+<p>Costs are where the income statement becomes detailed. A company breaks out its major cost categories separately. For JetBlue, the largest single cost is aircraft fuel at approximately $1.3 billion. Wages, salaries, and benefits for pilots, flight attendants, ground staff, and others comes in slightly above that. Add in landing fees, maintenance, depreciation, and other operating costs, and JetBlue&#x27;s total operating costs came to approximately $5.2 billion.</p>
+<p>What remains after subtracting costs from revenue is operating profit (also called operating income, or EBIT — Earnings Before Interest and Taxes). For JetBlue, this was approximately $1.2 billion on $6.4 billion in revenue.</p>
+<p>Operating margin — operating profit divided by revenue — tells you what percentage of each revenue dollar the company retains after paying all operating costs. For JetBlue, that is roughly 19%, which is actually quite healthy for an airline industry known for chronically thin margins. By comparison, pharmaceutical companies can have operating margins of 50%, 60%, or higher. Software companies similarly. A royalty business — one that simply collects royalty payments for intellectual property it owns — might have margins approaching 100%, since there is almost no cost associated with receiving a payment.</p>
+<p>Understanding margins across industries is part of developing the intuition that distinguishes a sophisticated investor from a beginner. No margin percentage is good or bad in isolation; you have to understand what is normal for that industry and why.</p>
+<p>The Cash Flow Statement</p>
+<p>The cash flow statement will be covered in depth in later lessons. For now, understand that it tracks the actual movement of cash in and out of the business — which differs from the accounting profit shown on the income statement. The differences arise from non-cash items (like depreciation, which reduces reported profit but does not actually take cash out of the business) and from changes in working capital (things like the timing of when the company collects its receivables or pays its suppliers). The cash flow statement is critically important for understanding the true cash-generating capacity of a business, and it is the foundation for the discounted cash flow analysis that lies at the heart of most serious investment valuation.</p>
+<h2 class="part-heading">Part Six: Resources And Tools</h2>
+<h3 class="sub-heading">What You Actually Need</h3>
+<p>You need Microsoft Excel (or an equivalent free spreadsheet tool like Google Sheets) and an internet connection. That is genuinely it. You do not need a Bloomberg terminal — at $2,000 per month, that is a tool for full-time professionals, and everything it offers for basic research can be replicated with free sources. The SEC&#x27;s EDGAR database at SEC.gov is your primary source: every public company&#x27;s 10-K and 10-Q filings are available there, searchable by company name or ticker symbol, free of charge. Yahoo Finance is useful for quickly looking up current stock prices and shares outstanding.</p>
+<p>The only time professional data services become necessary is when you need large-scale screeners, real-time data, or historical series that are impractical to compile manually.</p>
+<h3 class="sub-heading">Recommended Reading</h3>
+<p>Warren Buffett&#x27;s annual shareholder letters are among the best free investment education available anywhere. His older letters from his partnership years in the 1950s and 1960s are particularly instructive — they show how he thought when he was managing smaller sums of money and the lessons are more directly applicable to individual investors. Charlie Munger&#x27;s talks and writings complement Buffett&#x27;s framework with a different but deeply compatible intellectual perspective.</p>
+<p>For a foundational understanding of corporate finance — discounted cash flows, present value, weighted average cost of capital, and the mathematical underpinnings of valuation — the Brealey, Myers, and Allen corporate finance textbook is the standard academic reference and worth working through.</p>
+<p>Seth Klarman&#x27;s &quot;Margin of Safety&quot; is out of print but available informally online and widely considered one of the best books ever written on value investing. It is a modern, rigorous update of the Graham tradition and superior in many ways to Graham&#x27;s original works as practical guidance for today&#x27;s markets.</p>
+<p>Phil Fisher&#x27;s &quot;Common Stocks and Uncommon Profits&quot; is an essential manual on qualitative due diligence — what questions to ask about a business, how to assess management quality, and how to think about the durability of a competitive advantage. It teaches the investigative methodology that complements quantitative analysis.</p>
+<p>Jack Schwager&#x27;s &quot;Market Wizards&quot; series consists of in-depth interviews with a wide range of successful investors and traders. The diversity of approaches represented — fundamental stock pickers, macro traders, technical analysts, quants — provides a valuable reminder that there is no single correct way to succeed in markets, and that self-awareness about your own approach matters more than adopting someone else&#x27;s.</p>
+<p>&quot;Business Adventures&quot; by John Brooks is a collection of essays about American business that both Bill Gates and Warren Buffett have cited as a favorite. It is not a finance textbook but rather vivid, readable narrative that illustrates timeless lessons about how businesses succeed and fail.</p>
+<p>Aswath Damodaran, a professor at NYU&#x27;s Stern School of Business, maintains a website with extensive free material on valuation. While his work is academic in nature and he has limited practical investing experience, his valuation frameworks are thorough and widely referenced in the industry.</p>
+<h2 class="part-heading">Key Principles</h2>
+<p>The following are the most important ideas from this lesson. Return to these as you continue studying.</p>
+<div class="numbered-item"><span class="item-num">1</span><div class="item-body"><strong>Investing is not for casual practitioners. You cannot succeed at this in your spare time. The competition is made up of professionals who do nothing else. If you want to invest seriously, commit to it fully — or focus your energy on something where part-time effort can produce full-time results.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">2</span><div class="item-body"><strong>The most likely path to success runs through expertise first, capital second. Develop deep knowledge of businesses and markets. Demonstrate that knowledge in ways that others recognize as valuable. Build capital over time through skill and patience, not through speculative bets with a small account.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">3</span><div class="item-body"><strong>The best investors in the world make 10 to 20 percent annually, sustained. Anything far above that is either temporary, lucky, or both. Plan conservatively, and let compounding do the heavy lifting over decades. A 7% annual return maintained for 40 years is a remarkable outcome.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">4</span><div class="item-body"><strong>Stock price tells you almost nothing without context. The price of a single share is meaningless until you know how many shares exist and what the company earns. Always think in terms of market capitalization — the total value of all shares combined.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">5</span><div class="item-body"><strong>Enterprise value is the metric that tells you what you are truly paying for a business. It adjusts market cap for cash (which you receive when you acquire the company) and debt (which you absorb). Use enterprise value, not market cap, when comparing how expensive or cheap a company is relative to its earnings.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">6</span><div class="item-body"><strong>The balance sheet is a snapshot of a company&#x27;s financial position at a specific moment. It shows assets (what the company owns), liabilities (what it owes), and shareholders&#x27; equity (the difference). Assets must always equal liabilities plus equity. This identity is not a technicality — it reflects the fundamental structure of how businesses are financed and operated.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">7</span><div class="item-body"><strong>The income statement covers a period of time and shows revenue, costs, and profit. The ratio of profit to revenue — the margin — varies enormously by industry and tells you how efficiently a business converts sales into earnings. Understanding typical margins for different kinds of businesses is part of developing financial intuition.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">8</span><div class="item-body"><strong>Learn to distinguish luck from skill, in yourself and in others. A strategy that worked brilliantly for five years in a particular market environment may produce nothing in a different one. The most dangerous moment in any investment career is when a run of success gets mistaken for permanent mastery.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">9</span><div class="item-body"><strong>Seek mentors with verified track records. The finance world is full of people who sound authoritative but whose own results are mediocre or worse. Prioritize learning from those who have genuinely succeeded over long periods managing real capital.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">10</span><div class="item-body"><strong>The financial statements are your primary source of truth. Before forming an opinion about any investment, read the actual 10-K or 10-Q filing directly. Develop your own view from primary sources rather than relying on summaries, news articles, or analyst reports.</strong>
+</div></div>
+<h2 class="part-heading">Looking Ahead</h2>
+<p>Lesson 2 will go deeper into the balance sheet — examining individual line items like accounts receivable, inventory, and property, plant and equipment in much greater detail. You will also begin working with the income statement more systematically, learning how to read and interpret a full income statement for a real public company. Eventually, this course builds toward the central skill of investment analysis: forecasting a company&#x27;s future cash flows, using the present value concept to determine what those cash flows are worth today, and comparing that estimated value against the current market price.</p>
+<p>The foundation built in this lesson — understanding what stocks are, how to find basic financial data, what market cap and enterprise value mean, and how the three financial statements fit together — is the alphabet of this field. Everything that comes next is written in it.</p></div>
+  </div>
+</section><section class="lesson-card lesson-full" id="lesson-2">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 02</div>
+        <span class="level-badge level-beginner">Beginner</span>
+        <span class="full-badge">Full Lesson</span>
+      </div>
+      <h2 class="lesson-title">Income Statements, Balance Sheets, and Present Value Discounting</h2>
+    </div>
+    <div class="lesson-prose"><h2 class="part-heading">Finance 101 — Lesson 2</h2>
+<h3 class="sub-heading">Income Statements, Balance Sheets, and Present Value Discounting</h3>
+<h2 class="part-heading">Introduction: What This Lesson Covers And Why It Matters</h2>
+<p>If Lesson 1 introduced you to the landscape of finance and the six key numbers every investor examines when first looking at a company, Lesson 2 is where you begin to develop the analytical vocabulary you need to actually read and interpret a business. You will learn to navigate the three foundational financial documents every public company files — the income statement, the balance sheet, and the cash flow statement — and you will take your first serious look at one of the deepest ideas in all of finance: the time value of money.</p>
+<p>This lesson uses Apple&#x27;s publicly available SEC filings from early 2016 as the primary working example, so every number you encounter here comes from a real company filing that you can look up yourself. By the end, you should understand what a company&#x27;s assets and liabilities tell you, how revenue flows through an income statement on its way to becoming net profit, and why a dollar you expect to receive ten years from now is not the same thing as a dollar sitting in your pocket today. That last concept — present value discounting — sounds technical, but it is ultimately the intellectual foundation on which nearly all of investing rests.</p>
+<p>A word of warning: some of this material is dry. Finance is, in large part, a discipline of &quot;plugging and chugging&quot; — sifting through hundreds of filings, building spreadsheets, doing the same calculations over and over on different companies until they become second nature. There is no shortcut. The reward for doing it patiently is the ability to see things in a company&#x27;s numbers that most people miss.</p>
+<h2 class="part-heading">Section 1: Where To Find Financial Information — The Sec And Edgar</h2>
+<p>Before you can read a financial statement, you have to know where to find one. Every publicly traded company in the United States is required by law to file regular financial disclosures with the Securities and Exchange Commission (the SEC). These filings are available for free to anyone through the SEC&#x27;s EDGAR database. You can search any company by its stock ticker symbol — Apple&#x27;s is AAPL — and retrieve every report the company has ever filed.</p>
+<p>The filings you care about most as a beginning investor are two:</p>
+<p>The 10-K is the annual report. It is a comprehensive document filed once per year, covering the company&#x27;s full-year results, its business operations, risk factors, and full audited financial statements.</p>
+<p>The 10-Q is the quarterly report. It is filed three times per year (covering the first, second, and third quarters — the annual 10-K serves as the fourth-quarter report). It contains unaudited financial statements for the most recent quarter.</p>
+<p>Other filings exist, and you will encounter them. An 8-K is filed whenever a company experiences a material event — a CEO change, a major acquisition, an earnings restatement. A 13-G or 13-D is an ownership disclosure filed whenever an investor acquires more than five percent of a company&#x27;s shares. For now, though, your work will center on the 10-Q and the 10-K.</p>
+<p>Critically, these statements carry legal weight. Companies must file them accurately under penalty of fraud charges. People have gone to prison for misrepresenting financial statements — Enron, WorldCom, and Computer Associates are well-known examples. The SEC filings are not perfect, but they are your most reliable starting point.</p>
+<h2 class="part-heading">Section 2: The Holy Trinity — Three Statements, One Picture</h2>
+<p>When you open a company&#x27;s 10-Q or 10-K, you will find three core financial statements. Think of them as three windows into the same building, each showing you a different view:</p>
+<p>The Income Statement shows you what the company earned and spent over a specific period of time — a quarter or a full year. It tells you whether the company was profitable.</p>
+<p>The Balance Sheet shows you a snapshot of the company&#x27;s financial position at a single moment in time. It catalogs everything the company owns (its assets) and everything it owes (its liabilities), with the difference representing shareholder equity.</p>
+<p>The Cash Flow Statement tracks the actual movement of cash in and out of the business. It reconciles the profit shown on the income statement with the real-world cash position.</p>
+<p>All three are necessary. You need all of them to truly understand a company&#x27;s performance, because each one tells you something the others do not. Beginners typically focus first on the income statement and the balance sheet. The cash flow statement is somewhat more advanced, but it is essential for serious analysis and will be covered in future lessons.</p>
+<h2 class="part-heading">Section 3: The Balance Sheet — What The Company Owns And Owes</h2>
+<p>The balance sheet is organized around a simple and elegant equation:</p>
+<h3 class="sub-heading">Assets = Liabilities + Shareholders&#x27; Equity</h3>
+<p>Everything a company owns or controls is an asset. Everything it owes to someone else is a liability. The remainder — what would be left over for the shareholders if all assets were sold and all debts paid — is shareholders&#x27; equity, sometimes called book value.</p>
+<p>The balance sheet always balances. That is not a coincidence or a goal; it is a mathematical identity. If you rearrange the equation, you get: Assets minus Liabilities equals Shareholders&#x27; Equity. The reason the two sides of the balance sheet always match is that every transaction affects at least two entries simultaneously.</p>
+<h2 class="part-heading">The Asset Side</h2>
+<p>Assets on the balance sheet are listed in order of liquidity. Liquidity refers to how quickly and easily an asset can be converted into cash. Cash is the most liquid asset — you can use it immediately. A factory building, by contrast, might take months or years to sell. As you move down the asset side of the balance sheet, the assets become progressively less liquid.</p>
+<h3 class="sub-heading">Current Assets</h3>
+<p>Current assets are assets that are expected to be converted into cash within one year. They appear at the top of the balance sheet and include:</p>
+<p>Cash and Cash Equivalents: This is literal cash, plus anything so close to cash that it is effectively the same thing — money market funds, short-term government securities with maturities under three months. For Apple in late 2015, this line showed approximately $16.7 billion.</p>
+<p>Short-Term Marketable Securities: These are financial instruments — typically bonds — that Apple owns and can sell relatively quickly, but which are not quite as liquid as cash. Apple held approximately $21.4 billion here. These are bonds with maturities of less than one year that Apple has purchased as a way of earning a return on its enormous cash reserves while keeping the money accessible.</p>
+<p>Accounts Receivable (AR): This is money that customers owe the company for products or services already delivered. Apple had approximately $12.9 billion in accounts receivable as of December 2015. This number exists because business-to-business commerce rarely works the way retail commerce does. When Apple ships tens of thousands of iPhones to a carrier like AT&amp;T, AT&amp;T does not pay Apple on the spot. Instead, AT&amp;T has a set payment period — typically 30 to 60 days — to remit payment. This arrangement is called &quot;net 30&quot; or &quot;net 60&quot; depending on the terms. Accounts receivable is listed &quot;net,&quot; meaning it has already been adjusted downward for expected bad debt — amounts that customers will likely never pay. If a customer is 90 days or more past due, a company will typically write down that receivable on its balance sheet and record a bad debt expense.</p>
+<p>Inventories: This is the value of goods the company has on hand that it intends to sell. Inventories include three categories: raw materials (the glass, aluminum, and components Apple purchases before manufacturing begins), work-in-progress (partially assembled products on the factory floor), and finished goods (completed iPhones sitting in warehouses waiting to be shipped). Apple carried roughly $2.1 billion in inventories. Inventory is less liquid than accounts receivable because it has not yet been sold — it must first find a buyer before it can become accounts receivable, and then the receivable must be collected before it becomes cash.</p>
+<p>Other Current Assets: This catch-all category includes items like prepaid expenses. If Apple pays rent in December for January office space, that payment is a prepayment — an asset, because it represents future value already purchased. Similarly, if Apple pays for a full year of software licensing upfront, the unused months of that license appear as an asset.</p>
+<p>Apple&#x27;s total current assets in late 2015 were approximately $76 billion.</p>
+<h3 class="sub-heading">Non-Current Assets</h3>
+<p>Below current assets, you encounter assets that will take more than one year to convert to cash. These include:</p>
+<p>Long-Term Marketable Securities: Apple held approximately $177 billion here. These are bonds with maturities greater than one year. When Apple bought a US Treasury bond maturing in 2025, for example, the government is not obligated to repay the principal until that date. However, Apple can still sell the bond on the open market at any time. For analytical purposes, many practitioners add long-term marketable securities to cash and short-term securities and treat the total as a single &quot;cash and investments&quot; figure. Apple&#x27;s combined cash and securities position was therefore roughly $215 billion.</p>
+<p>Property, Plant, and Equipment (PP&amp;E): This is sometimes called &quot;hard assets&quot; — any physical asset with a useful life exceeding twelve months. Apple&#x27;s PP&amp;E of approximately $22 billion includes everything from semiconductor fabrication equipment worth tens of millions of dollars to office chairs. The accounting treatment of PP&amp;E is complex and will be covered in detail in later lessons, but the key concept is depreciation: because PP&amp;E is used over multiple years, its cost is spread across those years rather than expensed all at once.</p>
+<p>Goodwill and Intangible Assets: These are the most abstract entries on the balance sheet. Goodwill arises when a company acquires another company for more than the book value of its assets — the excess purchase price is recorded as goodwill and represents things like the acquired company&#x27;s brand reputation, customer relationships, and market position. Intangible assets include patents, trademarks, and intellectual property. Apple carried about $8-9 billion in goodwill and intangibles. For analytical purposes, many investors treat these figures with skepticism — they are difficult to value precisely and will often never literally convert to cash.</p>
+<p>Apple&#x27;s total assets in late 2015 were approximately $293 billion.</p>
+<h2 class="part-heading">The Liability Side</h2>
+<p>Liabilities are what the company owes. They are organized similarly to assets — current liabilities (due within one year) come first, followed by long-term liabilities.</p>
+<p>Accounts Payable (AP): This is the mirror image of accounts receivable. Just as Apple&#x27;s customers owe Apple money for products received but not yet paid for, Apple owes money to its suppliers for goods and services received but not yet paid for. If Apple uses a law firm&#x27;s services in December and has 30 days to pay the invoice, that unpaid invoice is an accounts payable. It is not formally debt in the sense of a loan, but it is an obligation the company will have to meet.</p>
+<p>Accrued Expenses: Similar to accounts payable but typically more forward-looking. If a company has committed to paying an employee a million dollars per year under contract, the full million-dollar obligation can be recorded as an accrued expense even though only individual paychecks have been issued. Accrued expenses capture the idea of obligations that have been incurred but not yet paid.</p>
+<p>Deferred Revenue: This is one of the most conceptually important items on the balance sheet. Deferred revenue — sometimes called unearned revenue — is cash the company has already received but has not yet earned. If Apple&#x27;s software customer pays for a four-year service contract upfront, Apple cannot record the entire payment as revenue immediately. It has an obligation to deliver services for four years, so it records the advance payment as a liability (deferred revenue) and recognizes a proportional share of the revenue each quarter as it delivers the service. Consider the example: if a company signs a $10 million, four-year promotional contract and receives the full $10 million upfront in quarter one, it can only recognize $750,000 of revenue in that first quarter (the contract spans 16 quarters). The remaining $9.25 million sits on the balance sheet as a liability. The company has the cash, but it has not yet delivered the services it was paid for. Gift cards are a classic everyday example of deferred revenue: the store has your cash, but it has not yet provided goods in exchange.</p>
+<p>Debt: Apple&#x27;s balance sheet listed both commercial paper (short-term loans from banks and other financial institutions) and long-term debt (bonds Apple has issued to the public debt markets). Apple had approximately $7.3 billion in commercial paper, $2.5 billion in the current portion of long-term debt (the portion due within the next year), and $53 billion in long-term debt. This gives total debt of roughly $62 billion.</p>
+<p>Apple&#x27;s total liabilities were approximately $165 billion.</p>
+<h3 class="sub-heading">SHAREHOLDERS&#x27; EQUITY AND BOOK VALUE</h3>
+<p>Subtracting total liabilities ($165 billion) from total assets ($293 billion) yields shareholders&#x27; equity of approximately $130 billion. This is also called book value — the value of the company according to its accounting records once all debts are settled.</p>
+<p>Notice that Apple&#x27;s book value of $130 billion is substantially less than its market capitalization of approximately $537 billion at the time. Why would investors pay $537 billion for something that has a book value of only $130 billion? Because investors are not just paying for today&#x27;s assets minus today&#x27;s liabilities. They are paying for the future cash flows that Apple&#x27;s business will generate over the coming decades. This distinction — between book value and market value — is one of the most fundamental tensions in investing, and it connects directly to the concept of present value discounting covered in the next section.</p>
+<h2 class="part-heading">Enterprise Value Revisited</h2>
+<p>Enterprise Value represents the value of the business itself, independent of its capital structure. It is calculated as:</p>
+<h3 class="sub-heading">Enterprise Value = Market Capitalization + Debt - Cash and Cash Equivalents</h3>
+<p>For Apple: approximately $537 billion market cap plus $62 billion in debt minus $215 billion in cash and securities gives an Enterprise Value of roughly $385 billion.</p>
+<p>The intuition here is important. When you buy a share of Apple at a price that implies a $537 billion market cap, you are also acquiring your proportional share of Apple&#x27;s $215 billion cash pile and taking on your proportional share of its $62 billion debt. The enterprise value of $385 billion represents what you are implicitly paying for the operating business itself, stripped of the financial assets and obligations on its balance sheet.</p>
+<p>This matters practically. Imagine a company with a $50 million market cap and $60 million in cash and no debt. Its enterprise value is negative $10 million. In other words, you could buy the entire company for $50 million and instantly own $60 million in cash — a guaranteed $10 million profit regardless of what the underlying business does. That is an arbitrage — a near risk-free profit opportunity. Real-world examples of near-arbitrages like this do exist and form the basis of certain value investing strategies.</p>
+<h2 class="part-heading">Section 4: The Income Statement — From Revenue To Net Profit</h2>
+<p>The income statement tells you what happened to a company&#x27;s finances over a period of time. While the balance sheet is a snapshot (a photograph of the financial position on one specific date), the income statement is more like a video (a record of activity across a period). The key lines you need to understand, in order from top to bottom, are revenue, cost of goods sold, gross profit, operating expenses, operating profit, pre-tax income, taxes, and net income.</p>
+<h2 class="part-heading">Revenue</h2>
+<p>Revenue — also called sales, turnover, or receipts — is the total amount of money a company generated from selling its products or services during the period. Apple generated approximately $75.9 billion in revenue in the fourth quarter of 2015 (October through December). That is a three-month period.</p>
+<p>Revenue is not the same as cash received. This distinction is critical and trips up many beginners. Under accounting rules set by the Financial Accounting Standards Board (FASB), a company recognizes revenue when it has earned it — when title to the product has passed to the customer or when the service has been delivered — not necessarily when cash changes hands. Apple can ship iPhones to AT&amp;T in December, book the revenue in December, and not receive cash from AT&amp;T until January or February. The revenue is recorded in December; the cash receipt happens later.</p>
+<p>Revenue recognition becomes complicated in several situations. A four-year promotional contract paid in full upfront requires spreading recognition across the contract&#x27;s term. Returns policies add another layer: if Apple allows carriers to return unsold devices, the company must reserve a portion of revenue for expected returns rather than booking the full sale amount immediately. Intercompany revenue — sales from one subsidiary of a company to another — must be eliminated when consolidating financial statements, because it does not represent genuine economic activity with an outside party. Fraudulent manipulation of revenue recognition was a hallmark of several major accounting scandals, including Enron.</p>
+<h2 class="part-heading">Cost Of Goods Sold (Cogs)</h2>
+<p>Cost of goods sold is the direct cost of producing the goods or services that generated the revenue. It includes raw materials, manufacturing labor, factory overhead, and the depreciation of manufacturing equipment. Apple spent approximately $45.5 billion producing the $75.9 billion of products it sold in Q4 2015.</p>
+<h2 class="part-heading">Gross Profit And Gross Margin</h2>
+<p>Gross profit is simply revenue minus cost of goods sold:</p>
+<div class="formula">$75.9 billion revenue - $45.5 billion COGS = $30.4 billion gross profit</div>
+<p>Gross margin is gross profit expressed as a percentage of revenue:</p>
+<div class="formula">$30.4 billion / $75.9 billion = approximately 40%</div>
+<p>Apple&#x27;s 40% gross margin means that for every dollar of revenue it took in, it spent about 60 cents making the product and kept 40 cents to cover everything else. This is a high gross margin for a hardware company. The gross margin tells you about the underlying economics of a business&#x27;s core product — how much pricing power it has over its inputs, and how efficiently it converts raw materials and labor into sellable goods.</p>
+<h2 class="part-heading">Operating Expenses</h2>
+<p>Below gross profit, you subtract expenses that are necessary to run the business but are not directly tied to the production of individual units. The two main categories are:</p>
+<p>Research and Development (R&amp;D): Apple spent approximately $2.2 billion in Q4 2015 developing new products and improving existing ones. Given the company&#x27;s $30 billion gross profit, this is a modest R&amp;D expenditure relative to its size.</p>
+<p>Selling, General, and Administrative Expenses (SG&amp;A): This covers everything else it takes to run the company — executive compensation (including the CEO&#x27;s salary), office space, legal fees, marketing, and administrative functions. Apple spent approximately $3.8 billion on SG&amp;A in the quarter.</p>
+<p>Together, R&amp;D and SG&amp;A total about $6 billion in operating expenses for the quarter.</p>
+<h2 class="part-heading">Operating Profit And Operating Margin</h2>
+<p>Operating profit is gross profit minus operating expenses:</p>
+<div class="formula">$30.4 billion - $6 billion = approximately $24.4 billion</div>
+<p>Operating margin is operating profit divided by revenue:</p>
+<div class="formula">$24.4 billion / $75.9 billion = approximately 32%</div>
+<p>A 32% operating margin is exceptional. Most retailers operate at 5-10% operating margins. Pharmaceutical companies and certain software businesses can rival or exceed this figure. The operating margin is often the most important profitability metric for comparing companies within an industry, because it captures the economics of the actual business operations before the effects of financing decisions (debt and interest) or tax strategies come into play.</p>
+<h2 class="part-heading">Pre-Tax Income And Taxes</h2>
+<p>Below operating profit, you account for non-operating income and expenses. The biggest item here is interest income — Apple earns a return on its massive $215 billion cash and securities position. Apple collected approximately $42 million in net interest income in Q4 2015, bringing pre-tax income to approximately $24.4 billion.</p>
+<p>Apple paid approximately $6 billion in taxes in the quarter, implying an effective tax rate of about 25%. This is worth noting: 25% is a lower rate than many individual taxpayers face, a fact that generates debate about corporate tax practices.</p>
+<h2 class="part-heading">Net Income</h2>
+<p>After taxes, Apple&#x27;s net income — its bottom-line profit — was approximately $18 billion for the quarter. Net margin, the percentage of each revenue dollar that becomes profit, was approximately 24%. Every dollar someone spent buying an Apple product in Q4 2015 resulted in about 24 cents of after-tax profit for the company.</p>
+<p>Dividing net income by the number of shares outstanding gives earnings per share (EPS). With approximately 5.594 billion diluted shares outstanding, Apple&#x27;s EPS for the quarter was roughly $3.28.</p>
+<h2 class="part-heading">Year-Over-Year Comparison</h2>
+<p>One of the most important things you can do with income statement data is compare one period to the same period in the prior year. The formula for year-over-year change is:</p>
+<div class="formula">(New Period / Old Period) - 1 = Percentage Change</div>
+<p>When you compare Apple&#x27;s Q4 2015 results to Q4 2014, revenue grew by only about 2%. For a company of Apple&#x27;s scale, flat revenue growth is a serious concern. It suggests the company may be running out of new markets to enter or that product innovation is slowing. This is exactly the kind of signal you are looking for when you read financial statements — not just what the numbers are, but how they are changing over time.</p>
+<h2 class="part-heading">Section 5: Present Value And The Time Value Of Money</h2>
+<p>Having learned to read financial statements, you now face a deeper question: what do those numbers actually tell you about what a company is worth? This is where you encounter the most fundamental concept in all of finance — the time value of money.</p>
+<h2 class="part-heading">The Central Question</h2>
+<p>Consider this scenario: someone offers you a contract that pays you one dollar every January 1st, forever, and the contract can be sold to anyone you choose. How much would you sell it for?</p>
+<p>Your instinct might be to add up all the future payments — but that sum is literally infinite. Yet the contract is obviously not worth infinity. So what is it worth?</p>
+<p>Before answering that, consider a simpler version: would you rather have $1,000 on January 1, 2016, or $1,000 on January 1, 2019?</p>
+<p>The answer is unambiguous: you want the money in 2016. If you have the $1,000 today and invest it at a 10% annual return, by 2019 you would have:</p>
+<div class="formula">End of year 1 (2017): $1,000 x 1.10 = $1,100</div>
+<div class="formula">End of year 2 (2018): $1,100 x 1.10 = $1,210</div>
+<h3 class="sub-heading">End of year 3 (2019): $1,210 x 1.10 = $1,331</h3>
+<p>The $1,000 available in 2016 is worth more than the $1,000 available in 2019, because of the investment return you can earn in the intervening years. This is the time value of money: a dollar today is worth more than a dollar in the future.</p>
+<p>Two forces drive this principle:</p>
+<p>Opportunity cost (investment potential): Money held today can be invested to generate returns. The further into the future a payment arrives, the more investment return you forgo by having to wait.</p>
+<p>Risk: The further in the future a payment is, the more uncertain it is. The entity that promised to pay you might default, or circumstances might change. Future cash flows carry more uncertainty than present ones.</p>
+<p>Inflation is a third factor — the purchasing power of money tends to erode over time — but it is often considered a component of opportunity cost rather than a fully separate concept.</p>
+<h2 class="part-heading">The Discount Rate</h2>
+<p>To compare cash flows at different points in time, you need a way to express how much less valuable a future dollar is compared to a present dollar. This is the discount rate.</p>
+<p>Imagine a stream of $5 annual payments. The face value of each payment is $5, but the value you assign to each payment shrinks with each year further into the future. At a 3% discount rate, the $5 you will receive in one year is worth only $5 / 1.03 = approximately $4.85 today. The $5 you receive in two years is worth $5 / (1.03 squared) = approximately $4.71. The $5 fifty years from now is worth very little in today&#x27;s terms. As you discount further and further into the future, each payment&#x27;s present value approaches zero — like an asymptote, getting closer and closer to zero without ever quite reaching it.</p>
+<p>If you sum up all these present values across a very long period (say, 332 years worth of $5 payments), you get a finite number. At a 3% discount rate, the sum is approximately $166. At a 5% discount rate, the same stream of payments is worth only $100. At a 2% discount rate, it is worth $250. The relationship is inverse: higher discount rates reduce present value; lower discount rates increase it.</p>
+<p>This mathematical relationship between discount rates and present values has a direct market application. Bond prices move inversely with interest rates for exactly this reason. When interest rates (which function as discount rates) rise, the present value of a bond&#x27;s future cash flows falls, so bond prices fall. When interest rates fall, bond prices rise.</p>
+<h2 class="part-heading">Determining The Discount Rate</h2>
+<p>How do you choose the appropriate discount rate for a given stream of cash flows? This is, in a real sense, the central question of finance. The answer has two components:</p>
+<p>The risk-free rate: Every discount rate starts with a baseline representing the minimum return you would require for any investment, even a perfectly safe one. The US 10-year Treasury bond yield serves as the standard risk-free rate. At the time of this lesson, that yield was approximately 1.74%. This figure represents the opportunity cost of holding any cash — if you are not earning at least the risk-free rate, you are giving something up.</p>
+<p>The risk premium: Beyond the risk-free rate, you add additional return to compensate for the specific risks of the investment. A loan to a highly creditworthy company like Apple might warrant a risk premium of only a fraction of a percent above the risk-free rate. A loan to someone with an uncertain credit history might warrant a 10% premium. The riskier the borrower, the higher the rate you demand for taking on that risk.</p>
+<p>Therefore:</p>
+<h3 class="sub-heading">Discount Rate = Risk-Free Rate + Risk Premium</h3>
+<p>To make this concrete, consider a range of borrowers ordered by creditworthiness:</p>
+<p>- US Government bonds: approximately 1.74% — treated as essentially risk-free - Apple corporate bonds: approximately 2% — minimal premium over government bonds - Brazil government bonds: approximately 6% — emerging market risk premium - A creditworthy individual: perhaps 8-10% - A high-risk individual: potentially 50% or more</p>
+<p>This range illustrates that the discount rate is not an arbitrary choice — it reflects a genuine assessment of the probability that promised payments will actually arrive.</p>
+<h3 class="sub-heading">WORKED EXAMPLE: STEPH CURRY&#x27;S CONTRACT</h3>
+<p>To make present value concrete, consider an NBA contract: Steph Curry signs a five-year, $10 million per year contract with the Golden State Warriors. On paper, this is worth $50 million. But what is its present value today?</p>
+<p>In Excel, the NPV function calculates present value directly. Using a discount rate of 5% (reflecting the low but non-zero risk of an NBA team defaulting on a guaranteed player contract, plus the risk-free rate):</p>
+<div class="formula">=NPV(5%, 10000000, 10000000, 10000000, 10000000, 10000000)</div>
+<div class="formula">= approximately $43.3 million</div>
+<p>The contract is worth only about $43.3 million today, not $50 million, because of the time value of money. Curry would genuinely prefer to receive all $50 million immediately rather than wait for five annual installments — and any rational buyer of the contract would discount those future payments accordingly.</p>
+<p>The only scenario in which the contract would be worth the full $50 million is if the discount rate were exactly zero — meaning there is absolutely no opportunity cost and no risk of any kind. That condition essentially never exists in the real world. Even the most creditworthy counterparties carry some non-zero possibility of default.</p>
+<h2 class="part-heading">Perpetuities And The Present Value Formula</h2>
+<p>For a perpetuity — an infinite stream of equal annual payments — the present value simplifies to an elegant formula:</p>
+<h3 class="sub-heading">Present Value of Perpetuity = Annual Payment / Discount Rate</h3>
+<p>So a $5 annual perpetuity discounted at 3% is worth $5 / 0.03 = $166.67. At 5%, it is worth $5 / 0.05 = $100. At 2%, it is worth $5 / 0.02 = $250. At 10%, it is worth $5 / 0.10 = $50.</p>
+<p>This formula makes the inverse relationship between discount rates and present values immediately visible. It also shows why low interest rate environments (like the period this lesson was recorded in, with government bond yields at 1.74%) tend to push up asset prices: when discount rates are low, future cash flows are worth more today, so investors pay more for assets.</p>
+<h2 class="part-heading">The Connection To Stock Valuation</h2>
+<p>Return now to Apple. In Q4 2015, Apple earned approximately $18 billion of net income. Annualized, that is roughly $70 billion per year. If Apple were guaranteed to earn $70 billion per year forever, you could value Apple using a perpetuity formula. But Apple&#x27;s earnings are not guaranteed. They might grow, decline, or collapse entirely — just as Motorola and Nokia, both dominant phone makers a decade earlier, had collapsed. Forecasting earnings ten or twenty years out for any technology company is an exercise in profound uncertainty.</p>
+<p>What Warren Buffett understood when he invested in Coca-Cola and American Express at seemingly high valuations was that these companies had durable competitive advantages — brand recognition, switching costs, and other structural defenses that made their future cash flows unusually predictable and resilient. He assessed these businesses as deserving a lower risk premium and therefore a lower discount rate. By correctly judging that the market was applying too high a discount rate (pricing in too much risk), he was able to buy at prices that looked expensive relative to current earnings but were actually cheap relative to the long-run cash flows those businesses would produce.</p>
+<p>The opposite mistake is equally common. A company that appears cheap — trading at a low multiple of earnings — may deserve its low price because its future cash flows are genuinely uncertain and risky. A business that looks cheap at 10 times earnings may be expensive if those earnings are about to collapse.</p>
+<p>This is why valuing companies is both a quantitative and a qualitative exercise. The math of discounting is straightforward. The difficult part is determining the appropriate discount rate — which requires judgment about competitive dynamics, industry structure, management quality, and countless other factors that no formula can automatically provide.</p>
+<h2 class="part-heading">Pharmaceutical Cash Flows As A Special Case</h2>
+<p>Pharmaceutical drugs represent an interesting example of present value in practice. An approved, commercially successful drug tends to generate highly predictable cash flows: patients who start a prescription typically continue it for years. This resembles an annuity — the same revenue, reliably, period after period. As a result, drug companies can apply relatively low discount rates (3-5%) to model the value of an existing approved drug.</p>
+<p>However, drugs carry a unique structural risk: patents expire. When a drug&#x27;s patent expires, generic manufacturers can produce the same compound at a fraction of the cost, typically devastating the brand-name drug&#x27;s market share and revenue. This known future cliff — the patent expiry — requires careful modeling. Additionally, competing drugs or unexpected safety findings can shorten a drug&#x27;s commercial life unpredictably. Getting the discount rate right for pharmaceutical cash flows requires understanding patent timelines, competitive pipelines, and regulatory pathways.</p>
+<h2 class="part-heading">Section 6: The Npv Function In Excel</h2>
+<p>The practical tool for present value calculations is Excel&#x27;s NPV function. The syntax is:</p>
+<div class="formula">=NPV(discount_rate, cash_flow_1, cash_flow_2, ..., cash_flow_n)</div>
+<p>You provide the discount rate as a decimal (e.g., 0.05 for 5%) and then list each future cash flow in sequence. Excel returns the present value of that entire stream of cash flows, discounted at the rate you specified. Note that Excel&#x27;s NPV function assumes the first cash flow occurs at the end of the first period (one year from now), not at the beginning.</p>
+<p>For the Steph Curry example: =NPV(0.05, 10000000, 10000000, 10000000, 10000000, 10000000) = approximately $43,294,767</p>
+<p>For a perpetuity — infinite equal annual payments — skip the NPV function and use the simple formula: Present Value = Annual Payment / Discount Rate</p>
+<p>When working with real businesses, cash flows are neither equal from year to year nor infinite in practice. You forecast cash flows for a specific number of years (typically 5 to 10), apply a terminal value assumption for years beyond your explicit forecast, discount everything back to today, and sum the results. This approach is called a discounted cash flow (DCF) model — a technique that will be developed fully in later lessons.</p>
+<h2 class="part-heading">Key Principles</h2>
+<div class="numbered-item"><span class="item-num">1</span><div class="item-body"><strong>All financial analysis starts with primary sources. Use SEC filings directly — the 10-K for annual data and the 10-Q for quarterly data. The EDGAR database provides free access to every public company&#x27;s filings. These documents carry legal weight; companies can face fraud charges for material misstatements.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">2</span><div class="item-body"><strong>The three financial statements work together. The income statement shows profitability over a period; the balance sheet shows financial position at a moment in time; the cash flow statement reconciles accounting profit with actual cash movement. You need all three to understand a business fully.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">3</span><div class="item-body"><strong>The balance sheet is ordered by liquidity. Current assets (convertible to cash within one year) appear before non-current assets. Cash comes first; illiquid items like goodwill come last. The same logic applies in reverse on the liabilities side. The balance sheet always balances: Assets = Liabilities + Shareholders&#x27; Equity.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">4</span><div class="item-body"><strong>Revenue is not cash. Revenue is recognized when earned — when title passes or services are delivered — not necessarily when cash is received. Deferred revenue, accounts receivable, and accounts payable all represent gaps between when economic activity occurs and when cash actually changes hands. These gaps matter enormously for understanding a company&#x27;s real financial health.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">5</span><div class="item-body"><strong>The income statement flows from gross to net. Starting with revenue, you subtract cost of goods sold to get gross profit, then subtract operating expenses to get operating profit, then account for interest and other items to get pre-tax income, then subtract taxes to get net income. Each layer tells you something different about the business&#x27;s economics.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">6</span><div class="item-body"><strong>Book value and market value measure different things. Book value (shareholders&#x27; equity) reflects the accounting history of a business — cumulative asset costs minus liabilities. Market value reflects investor expectations about future earnings. The difference between the two is the market&#x27;s implicit valuation of future cash flows that do not yet appear on any balance sheet.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">7</span><div class="item-body"><strong>Enterprise value is a more precise measure of business value than market cap. Enterprise value adjusts market capitalization for net cash and debt. It represents the price of the operating business itself, independent of how it is financed.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">8</span><div class="item-body"><strong>A dollar today is worth more than a dollar tomorrow. This is not a casual observation — it is a precise mathematical fact grounded in opportunity cost and risk. The further in the future a cash flow is, the less it is worth in today&#x27;s terms. This principle underlies the valuation of every financial asset.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">9</span><div class="item-body"><strong>The discount rate has two components. Every discount rate consists of the risk-free rate (the return available on a riskless investment, approximated by US Treasury yields) plus a risk premium (additional compensation for the specific uncertainty of the cash flow being valued). Higher risk demands a higher discount rate, which reduces present value.</strong>
+</div></div>
+<div class="numbered-item"><span class="item-num">10</span><div class="item-body"><strong>Price implies a discount rate. When you pay a given price for a stock or any investment, you are implicitly accepting a certain discount rate applied to the underlying future cash flows. The most consequential decisions in investing come down to whether the discount rate implied by the current market price accurately reflects the actual risk of those cash flows — or whether the market has mispriced that risk in either direction. Most investment fortunes are made by correctly identifying cases where the market&#x27;s implied discount rate is wrong.</strong>
+</div></div>
+<h2 class="part-heading">End Of Lesson 2</h2>
+<p>The next lesson will build on these foundations, moving toward formal discounted cash flow models and a more rigorous treatment of how investors use these tools to arrive at buy and sell decisions on specific securities.</p></div>
+  </div>
+</section><section class="lesson-card" id="lesson-3">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 03</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Apple Model, Discounting Cash Flows, and Scuttlebutt Research</h2>
+    </div>
+    <p class="overview">Building on lesson 2, this session constructs a multi-quarter Apple financial model directly from SEC filings in Excel, introduces bond mechanics (coupons and yield), and builds a full DCF model with terminal value. The lesson also covers Phil Fisher&#x27;s &#x27;scuttlebutt&#x27; approach to primary research and the importance of listening to management conference calls.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Building a multi-quarter financial model from SEC filings</span><span class="tag">Discounted Cash Flow (DCF) valuation</span><span class="tag">Terminal value calculation</span><span class="tag">Bond coupon and yield</span><span class="tag">Scuttlebutt / primary research (Phil Fisher)</span><span class="tag">Management conference calls as research</span><span class="tag">Weighted Average Cost of Capital (WACC) basics</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>A DCF model forces you to make explicit assumptions about a company&#x27;s long-term growth and profitability — it is superior to using simple multiples because it accounts for the time value of money.</li><li>Terminal value often represents the majority of a company&#x27;s DCF valuation, so small changes in long-term growth assumptions have a massive impact on estimated value.</li><li>Phil Fisher&#x27;s scuttlebutt method — talking to customers, competitors, and suppliers — is one of the most powerful tools for developing differentiated investment insights.</li><li>Listening to earnings conference calls is a minimum requirement for any serious investor; management tone and forward guidance are often as important as the numbers themselves.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Apple (AAPL) — multi-quarter DCF model built from 10-Q filings</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-4">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 04</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">IBM Model and Valuation</h2>
+    </div>
+    <p class="overview">This lesson uses IBM as the case study to demonstrate segment-level revenue analysis, the impact of foreign currency (FX) on reported results, and a shortcut valuation using EV/Earnings. Martin also introduces the concepts of alpha and beta and explains why building deep knowledge of even one stock requires hundreds to thousands of hours of research.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Segment analysis (business unit breakdown)</span><span class="tag">Currency FX impact (reported vs. local currency revenue)</span><span class="tag">EV/Earnings shortcut valuation</span><span class="tag">Alpha vs. Beta</span><span class="tag">Stock correlation to market</span><span class="tag">Research time requirements</span><span class="tag">Revenue mix and margin by segment</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>IBM&#x27;s business is roughly 60% services and 28% software; understanding segment mix is essential because different segments have very different growth profiles and margins.</li><li>Currency movements can dramatically distort reported revenue for multinational companies — always compare local currency growth to reported growth to see the underlying business trend.</li><li>Alpha is excess return above the market benchmark; beta measures how much a stock moves with the market — separating these two is fundamental to evaluating any investment.</li><li>Developing a true investment-grade understanding of a single stock requires 100 to 1,000 hours of research — there are no shortcuts to genuine conviction.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">IBM (IBM) — segment breakdown, currency impact analysis</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-5">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 05</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Tech Industry Universe, Depreciation, and Cash Flow</h2>
+    </div>
+    <p class="overview">Martin presents a universe of 50+ tech companies and selects Alarm.com (ALRM) as a small-cap modeling exercise. The lesson focuses heavily on the mechanics of depreciation and amortization and how CapEx flows through the financial statements to impact free cash flow. All three sections of the cash flow statement — operations, investing, and financing — are explained in detail.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Building and maintaining a stock universe</span><span class="tag">Depreciation (tangible assets) vs. Amortization (intangible assets)</span><span class="tag">Capital Expenditures (CapEx)</span><span class="tag">Cash Flow from Operations (CFFO)</span><span class="tag">Cash Flow from Investing (CFFI)</span><span class="tag">Cash Flow from Financing (CFF)</span><span class="tag">Free Cash Flow calculation</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Depreciation and amortization are non-cash charges that reduce reported earnings but do not affect cash — adding them back is a critical step in calculating true free cash flow.</li><li>CapEx represents real cash spent on assets and must be subtracted from operating cash flow to arrive at free cash flow; confusing CapEx with operating expenses distorts profitability analysis.</li><li>Monitoring a universe of 50+ companies requires discipline — keeping models current (at minimum monthly) ensures you can act quickly when valuations become attractive.</li><li>Small-cap stocks like Alarm.com offer potentially larger arbitrage opportunities because fewer professional investors follow them, but require more due diligence on business fundamentals.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Alarm.com (ALRM) — small-cap SaaS security platform model</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-6">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 06</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Passive vs. Active Investing, Fund Types, and Facebook User Analysis</h2>
+    </div>
+    <p class="overview">This lesson compares passive index investing to active management, surveys fund types (mutual funds, hedge funds, family offices), and discusses portfolio concentration versus diversification. The second half applies the users-times-ARPU revenue model to Facebook, analyzing monthly and daily active users and average revenue per user to build a bottoms-up revenue forecast.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Passive (index) investing vs. active management</span><span class="tag">Efficient market hypothesis</span><span class="tag">Fund types (mutual funds, ETFs, hedge funds, family offices)</span><span class="tag">Portfolio concentration vs. diversification</span><span class="tag">Long/short portfolio construction</span><span class="tag">Monthly Active Users (MAU) and Daily Active Users (DAU)</span><span class="tag">Average Revenue Per User (ARPU)</span><span class="tag">Revenue = Users × ARPU framework</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>The revenue of any user-based internet business can be modeled as Users × ARPU — getting both components right is the key to an accurate forecast.</li><li>Active management is extremely difficult to sustain; most active managers underperform their benchmarks after fees, which makes passive investing a rational default for non-professionals.</li><li>A long/short portfolio with high concentration in best ideas typically generates more alpha than a highly diversified portfolio — but requires far greater conviction and research depth.</li><li>Facebook&#x27;s transition from a pure user-growth story to an ARPU monetization story illustrates how the investment thesis for internet companies evolves over their lifecycle.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Facebook (FB) — MAU, DAU, and ARPU analysis</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-7">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 07</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Risk Measures, Share Counts, GAAP vs. Non-GAAP, and Growth vs. Risk</h2>
+    </div>
+    <p class="overview">This lesson covers advanced analytical concepts: using drawdown as the primary measure of investment risk, understanding fat tail risk in portfolios, and distinguishing basic from diluted share counts. Martin also explains GAAP versus non-GAAP earnings adjustments and frames all investment decisions through a two-dimensional lens of growth and risk.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Portfolio drawdown as risk measure</span><span class="tag">Fat tail risk</span><span class="tag">Basic vs. diluted shares outstanding</span><span class="tag">Stock splits and their effect on per-share metrics</span><span class="tag">GAAP vs. non-GAAP accounting</span><span class="tag">Stock-based compensation adjustments</span><span class="tag">Growth and risk as two core investment variables</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Drawdown — the peak-to-trough decline in portfolio value — is a more intuitive and actionable risk measure than standard deviation because it captures the real-world experience of loss.</li><li>Fat tail risk refers to the possibility of extreme outcomes that normal distributions underestimate; ignoring it leads to catastrophic losses in scenarios like the 2008 financial crisis.</li><li>Non-GAAP earnings strip out stock-based compensation and other one-time items to show recurring profitability; understanding the difference between GAAP and non-GAAP is essential when comparing companies.</li><li>Every investment can be evaluated on just two axes — expected growth and embedded risk — and the goal is to find stocks where growth is underpriced relative to the risk being taken.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Amazon (AMZN) — growth vs. risk valuation framework</span><span class="cs-tag">Microsoft (MSFT) — GAAP vs. non-GAAP comparison</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-8">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 08</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Short Selling, Wall Street Structure, ADRs, and Sector Selection</h2>
+    </div>
+    <p class="overview">Martin explains the mechanics of short selling — borrowing shares, selling them, and covering at a lower price — and maps out the buy-side versus sell-side structure of Wall Street. The lesson debunks sell-side research ratings, introduces American Depositary Receipts (ADRs) for accessing foreign stocks, and ends with an audience vote to select the next sector to study.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Short selling mechanics (borrow, sell short, cover)</span><span class="tag">Buy side vs. sell side</span><span class="tag">Investment bank roles and hierarchy</span><span class="tag">Sell-side research and its conflicts of interest</span><span class="tag">American Depositary Receipts (ADRs)</span><span class="tag">Sector selection methodology</span><span class="tag">Lateral skill transfer in finance careers</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Short selling requires borrowing shares from a broker, selling them at current prices, and buying them back later at a lower price — profit comes from the decline, but losses are theoretically unlimited if the stock rises.</li><li>Sell-side analysts at investment banks have inherent conflicts of interest because their employer earns fees from the companies they cover — their buy/sell ratings should be treated with extreme skepticism.</li><li>ADRs allow US investors to access foreign company shares through US exchanges, removing the complexity of foreign currency settlement and foreign brokerage accounts.</li><li>Focusing on a specific sector enables the development of deep, differentiated expertise — generalists who know a little about everything rarely have edge over specialists.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Various investment banks — Goldman Sachs, Morgan Stanley, JP Morgan (sell-side structure)</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-9">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 09</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Hedge Fund Structure and Twitter Analysis</h2>
+    </div>
+    <p class="overview">This lesson covers the legal and operational structure of hedge funds — limited partnerships, onshore versus offshore entities, the 2-and-20 fee model, lockup periods, and redemption gates. The second half applies these analytical frameworks to Twitter, examining its stalled monthly active user growth (~320M flat) versus its steadily growing ARPU.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Hedge fund legal structure (Limited Partnership)</span><span class="tag">Onshore vs. offshore funds</span><span class="tag">2-and-20 fee model (management fee + incentive fee)</span><span class="tag">Lockup periods and redemption gates</span><span class="tag">Hedge fund vs. S&amp;P 500 performance comparison</span><span class="tag">Monthly Active Users (MAU) analysis</span><span class="tag">ARPU growth as compensation for user stagnation</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>The 2-and-20 fee structure — 2% of assets annually plus 20% of profits — creates enormous incentives for fund managers to grow AUM, which can conflict with the incentive to generate the best returns for investors.</li><li>Lockup periods protect fund managers from forced selling during drawdowns but reduce liquidity for investors; understanding these terms is essential before committing capital to any fund.</li><li>Twitter&#x27;s investment thesis hinged on whether ARPU growth could offset flat user growth — a classic example of how a company can grow revenue even when user acquisition stalls.</li><li>Hedge funds as a group have underperformed the S&amp;P 500 net of fees in most recent years, raising serious questions about whether the fee structure is justified for most investors.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Twitter (TWTR) — MAU approximately 320M flat, ARPU growing</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-10">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 10</div>
+        <span class="level-badge level-advanced">Advanced</span>
+      </div>
+      <h2 class="lesson-title">Valeant Pharmaceuticals Deep Dive</h2>
+    </div>
+    <p class="overview">Recorded on a day Valeant&#x27;s stock fell roughly 50%, this lesson performs a real-time analysis of Valeant&#x27;s capital structure, GAAP versus non-GAAP EBITDA, and EV/EBITDA valuation versus distressed comparables. Martin uses IMS Health pharma industry data and discusses CEO/board dynamics, illustrating how market panics can create both opportunity and value traps.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">EBITDA and EV/EBITDA valuation multiples</span><span class="tag">GAAP vs. non-GAAP EBITDA reconciliation</span><span class="tag">Capital structure analysis (debt levels, interest coverage)</span><span class="tag">Distressed company valuation comparables</span><span class="tag">Pharma industry data (IMS Health)</span><span class="tag">CEO and board dynamics as investment factors</span><span class="tag">Market panic vs. fundamental deterioration</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>EV/EBITDA is one of the most commonly used valuation multiples in leveraged buyouts and distressed investing because it strips out the effects of capital structure and taxes.</li><li>The gap between GAAP and non-GAAP EBITDA at Valeant was enormous — understanding which adjustments are legitimate versus which are aggressive accounting is critical to avoiding value traps.</li><li>A 50% single-day stock decline does not automatically make a stock cheap; high leverage combined with declining fundamentals can make a stock worthless even after a massive drop.</li><li>CEO credibility and board composition are material investment factors — management integrity issues are often the first warning sign of deeper fundamental problems.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Valeant Pharmaceuticals (VRX) — real-time 50% crash analysis</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-11">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 11</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">eBay Valuation and E-Commerce Competitive Landscape</h2>
+    </div>
+    <p class="overview">This lesson performs a full valuation of eBay using its Gross Merchandise Volume, active buyer count, and earnings, arriving at approximately 10x earnings on a $25B enterprise value. Martin also examines Amazon&#x27;s growing dominance in e-commerce and frames the competitive dynamics between marketplace models and first-party retail.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Gross Merchandise Volume (GMV)</span><span class="tag">Active buyer metric</span><span class="tag">Marketplace vs. first-party retail models</span><span class="tag">EV/Earnings valuation</span><span class="tag">E-commerce competitive dynamics</span><span class="tag">Network effects in marketplace businesses</span><span class="tag">Take rate analysis</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>eBay&#x27;s valuation at roughly 10x earnings (~$25B EV on ~$2B net income) illustrates how a mature internet marketplace can be valued like a traditional business once growth slows.</li><li>GMV (the total value of goods sold on a platform) is the key top-line metric for marketplace businesses; the company&#x27;s revenue is a fraction of GMV based on its take rate.</li><li>Amazon&#x27;s aggressive expansion into every category of e-commerce is a structural threat to any company in the online retail ecosystem — competitive moat analysis must account for Amazon risk.</li><li>With 162 million active buyers, eBay&#x27;s user base was large but showed signs of maturity, making future growth dependent on increasing spend per buyer rather than new user acquisition.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">eBay (EBAY) — $29B market cap, $25B EV, $2B net income, 162M active buyers</span><span class="cs-tag">Amazon (AMZN) — retail market share growth comparison</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-12">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 12</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Netflix Valuation and Subscription Business Modeling</h2>
+    </div>
+    <p class="overview">Martin builds his own Netflix model and reviews four student-submitted models, critiquing each for their user growth assumptions. The lesson demonstrates how to set rational penetration ceilings for a subscription business and shows that Netflix&#x27;s stock price at ~$100 required the company to grow from 14% to 25% US household penetration just to break even — making it a risky bet.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Subscription business modeling (users × monthly fee)</span><span class="tag">Market penetration rate analysis</span><span class="tag">Domestic vs. international user growth curves</span><span class="tag">Law of large numbers applied to user growth</span><span class="tag">Best-case scenario analysis</span><span class="tag">Content cost as a structural constraint</span><span class="tag">Modeling velocity and growth deceleration</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Netflix&#x27;s valuation was essentially a bet on penetration — at $100/share the stock was already pricing in growth from 14% to 25% US penetration, leaving little margin of safety even in a good outcome.</li><li>International business was growing at 64% year-over-year while domestic growth had slowed to 15% — investors had to underwrite international expansion to justify the valuation.</li><li>A good model must derive revenue from user counts and ARPU rather than applying an arbitrary percentage growth rate — top-down assumptions mask the natural upper bounds of addressable market.</li><li>Even the bull case for Netflix (80-90% US penetration) only produced a 4-5x return from the current price — suggesting the stock had a poor risk/reward profile at that level.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Netflix (NFLX) — 71M subscribers, 15% domestic user growth, 64% international growth</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-13">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 13</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">International Investing and Recommended Reading</h2>
+    </div>
+    <p class="overview">Martin makes the case for international investing and argues that American investors incorrectly avoid foreign stocks due to misconceptions about access and complexity. He introduces arbitrage as a core investing concept and demonstrates how to analyze a Japanese stock (SoftBank) using Yahoo Finance Japan, IFRS financials, and currency conversion — applying the same skills used for US stocks.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Information arbitrage as core investment concept</span><span class="tag">Misconceptions about international investing</span><span class="tag">IFRS vs. GAAP accounting standards</span><span class="tag">Japanese fiscal year conventions (ends March 31)</span><span class="tag">Currency conversion for foreign stock valuation</span><span class="tag">Interactive Brokers for international trading</span><span class="tag">Recommended investing books (Fisher, Steinhardt, Schroeder)</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>The best investment opportunities often exist where the fewest professional investors are looking — international markets, especially in Asia, are systematically under-researched by US investors and therefore offer more pricing inefficiency.</li><li>International stocks require learning only a few additional conventions (fiscal year, currency, IFRS vs. GAAP) — the core analytical framework is identical to US equity analysis.</li><li>Arbitrage, broadly defined, is the tendency of securities within a group to be mispriced relative to each other — maximizing the dispersion of mispricings you can exploit is the goal of fundamental investing.</li><li>Key recommended books: &#x27;Common Stocks and Uncommon Profits&#x27; (Phil Fisher), &#x27;No Bull&#x27; (Steinhardt), &#x27;The Snowball&#x27; (Schroeder on Buffett), &#x27;Barbarians at the Gate&#x27;, &#x27;Den of Thieves&#x27;.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">SoftBank (9984.T) — Japanese telecom/tech conglomerate, ~$58B market cap</span><span class="cs-tag">Alibaba (BABA), Tencent — mentioned as international tech comparables</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-14">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 14</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Yahoo Deep Dive and Primary Research Methods</h2>
+    </div>
+    <p class="overview">Using Yahoo&#x27;s upcoming model exercise as context, Martin delivers an extensive lesson on primary research — the distinction between primary and secondary research, insider information laws, channel checks, and how to legitimately talk to company management, customers, and competitors. The live Yahoo analysis reveals a complex situation where Alibaba stake ownership obscured the underlying Yahoo operating business.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Primary vs. secondary research</span><span class="tag">Insider information rules (material, non-public, breach of duty)</span><span class="tag">Channel checks and due diligence</span><span class="tag">Talking to management (CEO, CFO, IR) — best practices</span><span class="tag">Galleon Group as insider trading cautionary tale</span><span class="tag">Sum-of-the-parts valuation (Yahoo operating business vs. Alibaba stake)</span><span class="tag">Traffic Acquisition Costs (TAC) in internet businesses</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Primary research — gathering information directly from customers, competitors, and suppliers — is the highest-value research activity in investing, but must be done carefully to avoid crossing into insider trading territory.</li><li>Insider information is only illegal to trade on when it is material, non-public, and obtained through a breach of fiduciary duty — understanding these elements is critical for professional investors.</li><li>Yahoo&#x27;s operating business was worth roughly $10-15B (2-3x revenue of ~$5B), but this was almost entirely obscured by the much larger value of its Alibaba stake — a classic sum-of-the-parts complexity.</li><li>Sell-side research should not be trusted as investment advice due to conflicts of interest; it can be useful as a source of data and background, but the investment conclusion must always be independently derived.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Yahoo (YHOO) — sum-of-the-parts: Alibaba stake plus operating business</span><span class="cs-tag">Galleon Group — insider trading cautionary example</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-15">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 15</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Stamps.com (STMP) Analysis and SaaS Business Models</h2>
+    </div>
+    <p class="overview">This lesson builds a detailed model of Stamps.com, a SaaS postage company with 80% gross margins, using it to teach how software-only businesses can extract high-margin value from low-margin physical industries. Martin explains organic vs. inorganic revenue growth, the SaaS business model, and critiques 23 student-submitted models in detail.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Software as a Service (SaaS) business model</span><span class="tag">Organic vs. inorganic (acquisition-driven) revenue growth</span><span class="tag">Gross margin analysis for software businesses</span><span class="tag">Relationship between market cap and enterprise value for levered companies</span><span class="tag">Model review and critique methodology</span><span class="tag">Google Alerts and company email alerts for research tracking</span><span class="tag">Scale economics in SaaS</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>SaaS businesses can achieve 80%+ gross margins by sitting on top of low-margin physical industries and providing software convenience — Stamps.com earns high margins by not actually delivering any mail.</li><li>Inorganic growth from acquisitions must be stripped out to assess the true organic growth rate of the underlying business — reported revenue trends can be misleading for acquisitive companies.</li><li>A stock like Stamps.com ($1.6B EV) being valued similarly to Yahoo ($1.6B EV for its operating business) illustrates that popularity and business quality are very different things.</li><li>Maintaining a structured research process — Google Alerts, company press release subscriptions, and regularly updated models — is the operational foundation of professional investing.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Stamps.com (STMP) — ~$1.6B EV, 17M shares, 80% gross margins, SaaS postage platform</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-16">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 16</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">RealPage Analysis and Scale Economics</h2>
+    </div>
+    <p class="overview">Martin introduces RealPage (RP), a property management software company, using it as a vehicle for teaching the concept of operating scale — how fixed cost leverage drives margin expansion as revenue grows. The lesson also includes career advice for aspiring investors, a discussion of why most individuals should not try to invest their own money, and portfolio updates including a new short position in Netflix.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Operating scale and fixed cost leverage</span><span class="tag">Property management software sector</span><span class="tag">Zero-sum game nature of active investing</span><span class="tag">When to invest vs. when to build wealth in your primary career</span><span class="tag">Portfolio position sizing and risk per position</span><span class="tag">Factor analysis (large cap vs. mid cap behavior)</span><span class="tag">Maintaining a live investment portfolio for learning</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Scale is one of the most underappreciated variables in company valuation — as a SaaS company grows revenue over a largely fixed cost base, margins expand non-linearly and free cash flow accelerates.</li><li>Most individuals should not try to invest their own money; the investing game is zero-sum and dominated by professionals — the best strategy for most people is to excel in their primary field and hire a skilled manager.</li><li>Mid-cap stocks carry meaningfully more risk per dollar invested than large-caps like Microsoft, even when the dollar amounts are similar — position sizing must account for this difference.</li><li>Shkreli initiated a short position in Netflix after concluding that slowing subscriber additions and persistent cash burn meant the stock was worth far less than $40B at 80M subscribers.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">RealPage (RP) — property management SaaS</span><span class="cs-tag">Netflix (NFLX) — short thesis based on cash burn and subscriber deceleration</span><span class="cs-tag">Stamps.com (STMP), Microsoft (MSFT) — portfolio positions</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-17">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 17</div>
+        <span class="level-badge level-intermediate">Intermediate</span>
+      </div>
+      <h2 class="lesson-title">Groupon Analysis, Convertible Bonds, and Portfolio Review</h2>
+    </div>
+    <p class="overview">This lesson analyzes Groupon as a turnaround candidate — a company with $3B in revenue and 50M paying customers that experienced explosive growth followed by sharp decline. Martin explains convertible bond mechanics and their equity-like upside, critiques student Groupon models for lacking business conviction, and reviews the live portfolio&#x27;s positions including a contrarian defense of Stamps.com against a short-seller attack.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Turnaround investment analysis</span><span class="tag">Convertible bond structure and mechanics</span><span class="tag">Coupon rate, conversion price, and conversion premium</span><span class="tag">Contrarian investing vs. consensus</span><span class="tag">Revenue per customer analysis</span><span class="tag">Seeking Alpha short-seller attacks and market overreaction</span><span class="tag">PE ratio limitations vs. DCF and NPV</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Convertible bonds give lenders equity upside (through the right to convert debt into stock at a set price) while providing downside protection through the debt claim — they are a hybrid instrument with a lower coupon than straight debt.</li><li>Groupon with 50M paying customers and $3B in revenue was a real business trading at distressed levels; contrarian investors should distinguish between a structurally broken company and one going through an addressable operational stumble.</li><li>PE ratios are fundamentally flawed because they do not account for growth stage, capital structure, or terminal value — the only correct way to value a company is through discounted cash flows.</li><li>When a Seeking Alpha article caused Stamps.com to sell off, Shkreli doubled the position — illustrating that short-term news-driven selling can create buying opportunities in well-understood holdings.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Groupon (GRPN) — $3B revenue, 50M paying customers, turnaround analysis</span><span class="cs-tag">Stamps.com (STMP) — response to Seeking Alpha short attack</span><span class="cs-tag">Facebook (FB) — new long position added</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-18">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 18</div>
+        <span class="level-badge level-advanced">Advanced</span>
+      </div>
+      <h2 class="lesson-title">Salesforce.com Analysis, Hedge Fund Holdings (13F), and Tiger Fund Complex</h2>
+    </div>
+    <p class="overview">Martin returns after a gap to analyze Salesforce.com, covering its subscription revenue model, deferred revenue as a leading indicator, and how to derive non-GAAP free cash flow from GAAP financials. The lesson also teaches how to read 13-F and Form ADV filings on SEC.gov to research hedge fund portfolios, and profiles the Tiger Fund complex and its 32% annual return track record under Julian Robertson.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">SaaS deferred revenue as leading revenue indicator</span><span class="tag">Subscription ARR (Annual Recurring Revenue)</span><span class="tag">Non-GAAP free cash flow: operating cash flow + stock comp - CapEx</span><span class="tag">13-F Holdings filings on SEC.gov</span><span class="tag">Form ADV for hedge fund AUM and employee data</span><span class="tag">Tiger Fund complex and Julian Robertson</span><span class="tag">Hedge fund fee math (management + incentive fee income)</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Deferred revenue on the balance sheet is a critical forward-looking indicator for SaaS businesses — a year-over-year increase means future revenue is growing even if current revenue has not yet been recognized.</li><li>Salesforce&#x27;s GAAP net income was near breakeven due to heavy stock-based compensation, but non-GAAP free cash flow was nearly $2B, making its effective EV/cash flow roughly 20x — cheap for a 30% grower.</li><li>13-F filings show only long US equity positions held by institutional managers and exclude shorts, non-US holdings, and cash — they are a useful starting point for research but a dangerously incomplete picture of any fund&#x27;s strategy.</li><li>The Tiger Fund complex returned 32% annually for 20 years under Julian Robertson — $1M invested at inception grew to $258M, one of the greatest long-term track records in hedge fund history.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Salesforce.com (CRM) — deferred revenue, non-GAAP cash flow, DCF</span><span class="cs-tag">Bridgewater Associates — 13-F and Form ADV example</span><span class="cs-tag">Tiger Management / Julian Robertson — 32% CAGR, 1980-2000</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-19">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 19</div>
+        <span class="level-badge level-advanced">Advanced</span>
+      </div>
+      <h2 class="lesson-title">Macroeconomics, S&amp;P 500 Historical Returns, and Investor Psychology</h2>
+    </div>
+    <p class="overview">In this macro-focused lesson, Martin challenges the conventional wisdom that US equities reliably return 8% annually, using S&amp;P 500 data going back 50 years and adjusting for inflation and taxes to show the real after-tax return is far lower. He also profiles Ray Dalio&#x27;s Bridgewater and &#x27;radical transparency&#x27; principles, applying psychological and philosophical frameworks to investment decision-making.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Post hoc ergo propter hoc fallacy in market history</span><span class="tag">Real after-tax equity returns (inflation + capital gains tax adjustment)</span><span class="tag">S&amp;P 500 historical return distribution (mean, max, min, standard deviation)</span><span class="tag">Efficient market hypothesis critique</span><span class="tag">Ray Dalio&#x27;s &#x27;radical transparency&#x27; principles</span><span class="tag">Psychological impediments to investing success</span><span class="tag">Index funds and passive investing as default strategy</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>The widely cited 8% annual S&amp;P 500 return is before inflation (~1.6%) and taxes (~28% combined federal and state) — the real after-tax, inflation-adjusted return drops to roughly 1-2%, barely justifying the risk.</li><li>The assumption that &#x27;stocks go up over the long run&#x27; is a post hoc fallacy — past US equity outperformance is not necessarily a predictor of future returns, especially when starting valuations are elevated.</li><li>Ray Dalio&#x27;s radical transparency framework — where all decisions are challenged openly and intellectual dishonesty is treated as the worst offense — offers a model for building a rigorous, emotion-free investment process.</li><li>The biggest impediment to investment success is psychological pain — the fear of being wrong, the discomfort of holding unpopular positions, and the ego investment in prior decisions — not analytical skill.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">S&amp;P 500 — 50-year historical return analysis</span><span class="cs-tag">Bridgewater Associates (Ray Dalio) — radical transparency operating principles</span></div></div>
+  </div>
+</section><section class="lesson-card" id="lesson-20">
+  <div class="card-inner">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="lesson-num">Lesson 20</div>
+        <span class="level-badge level-advanced">Advanced</span>
+      </div>
+      <h2 class="lesson-title">Adobe Systems Analysis and Subscription Transition Modeling</h2>
+    </div>
+    <p class="overview">Martin analyzes Adobe&#x27;s successful transition from perpetual software licenses to a cloud subscription model (Creative Cloud), building a model from earnings releases and SEC filings. The lesson covers deferred revenue mechanics for subscription businesses, CapEx versus depreciation signals, and how to derive &#x27;real&#x27; free cash flow. Viking Global and hedge fund activism trends round out the lesson&#x27;s industry coverage.</p>
+    <div class="section-block"><div class="section-label">Key Concepts</div><div class="tags"><span class="tag">Subscription model transition (perpetual license to SaaS)</span><span class="tag">Annual Recurring Revenue (ARR) and deferred revenue tracking</span><span class="tag">CapEx vs. D&amp;A as earnings quality signal</span><span class="tag">Non-GAAP net income reconciliation</span><span class="tag">Real free cash flow definition: operating cash flow + stock comp - CapEx</span><span class="tag">Viking Global hedge fund and Tiger cub funds</span><span class="tag">Hedge fund trend toward private equity and activism</span></div></div>
+    <div class="section-block"><div class="section-label">Key Takeaways</div><ul class="takeaways"><li>Adobe&#x27;s transition from one-time software sales to annual subscriptions temporarily suppressed reported revenues but created a far more predictable and ultimately more valuable recurring revenue base.</li><li>When CapEx is lower than D&amp;A, it signals that depreciation is overstating expenses relative to actual asset investment — earnings are being understated on a cash basis, which is a bullish signal for quality of earnings.</li><li>Deferred revenue must be tracked on a year-over-year basis, not quarter-over-quarter, to smooth seasonality and accurately gauge whether future revenue pipelines are growing.</li><li>The hedge fund industry&#x27;s shift toward private equity and reduced activism reflects a broader search for uncorrelated alpha as public equity markets have become increasingly efficient and crowded.</li></ul></div>
+    <div class="case-studies"><div class="cs-label">Case Studies</div><div class="cs-tags"><span class="cs-tag">Adobe Systems (ADBE) — Creative Cloud subscription transition, ARR growth, ~$350M quarterly free cash flow</span><span class="cs-tag">Viking Global — Tiger cub fund, private equity trend</span></div></div>
+  </div>
+</section>
+  </div>
+</main>
+<script>
+  const cards = document.querySelectorAll('.lesson-card');
+  const links  = document.querySelectorAll('.nav-link');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        const a = document.querySelector(`.nav-link[href="#${e.target.id}"]`);
+        if (a) { a.classList.add('active'); a.scrollIntoView({block:'nearest'}); }
+      }
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  cards.forEach(c => io.observe(c));
+
+  document.getElementById('search').addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    document.querySelectorAll('#nav-list li').forEach(li => {
+      li.style.display = (!q || li.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+    cards.forEach(card => {
+      card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+</script>
+</body>
+</html>
